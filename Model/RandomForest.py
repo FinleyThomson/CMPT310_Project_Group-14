@@ -1,10 +1,13 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import os
+import numpy as np
 import numpy as np
 import pandas as pd
 import DecisionTree as dt
-import SyntheticData as sd
 from sklearn.ensemble import RandomForestClassifier
 import CrossValidation as cv
-import concurrent.futures as cf
 
 
 # ------------
@@ -128,7 +131,10 @@ class RandomForest():
 # Testing the forest with the data
 # ---------------------------------
 
-path = "TH_DATA_BY_PROJECT_FINAL.csv" #change directory if needed, defaulting to current directory
+k_folds = 5
+
+parent_dir = os.path.dirname(os.path.dirname(__file__))
+path = os.path.join(parent_dir,"Data","CSVs","Sorted","TH_DATA_BY_PROJECT_FINAL.csv")
 df = pd.read_csv(path) 
 
 feature_columns = ["Initial Assessment","Income",
@@ -141,8 +147,7 @@ synth_columns = ["EstProjectCost", "Initial Assessment", "Final Assessment", "In
 
 
 my_forest = RandomForest(NUM_TREES, NUM_SPLITTING_FEATURES, BOOTSTRAP_SAMPLE_SIZE, MAX_DEPTH, MIN_SAMPLES, MIN_INFORMATION, NUM_CLASSIFICATIONS, WITH_REPLACEMENT)
-
-confusion_matrix, training_accuracy, training_F1, test_accuracy, test_F1 = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, my_forest, 10, 3000)
+confusion_matrix, training_accuracy, training_F1, test_accuracy, test_F1 = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, my_forest, k_folds, 3000)
 
 print("Training Performance")
 print("Train Accuracy: ", training_accuracy)
@@ -154,7 +159,7 @@ print("F1 Score: ", test_F1)
     
 sk_forest = RandomForestClassifier(n_estimators = NUM_TREES,max_depth = MAX_DEPTH, min_samples_leaf = 1, max_features = NUM_SPLITTING_FEATURES, bootstrap = True, max_samples = BOOTSTRAP_SAMPLE_SIZE)
 
-confusion_matrix_sk, training_accuracy_sk, training_F1_sk, test_accuracy_sk, test_F1_sk = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, sk_forest, 10, 3000)
+confusion_matrix_sk, training_accuracy_sk, training_F1_sk, test_accuracy_sk, test_F1_sk = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, sk_forest, k_folds, 3000)
 
 print("Training Performance SK")
 print("Train Accuracy: ", training_accuracy_sk)

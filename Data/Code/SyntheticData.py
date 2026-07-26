@@ -12,23 +12,49 @@ COLS = ["EstProjectCost", "Initial Assessment", "Final Assessment", "Income", "D
 # Functions
 #------------
 
-def multivariateLognormalDistribution(data): # lognormal to normal in order to enure positivty of features
+def multivariateLognormalDistributionGeneration(data, n): 
+    """Creates a multivariate lognormal distribution and then exponeniates in order to ensure positivty of features when generating the synthetic dataset.
+    
+        Parameters
+        ----------
+        data: (nparray) dataset to create the synthetic set from
+        n: (int) number of datapoints in the synthetic set
 
-    X = data[COLS]
+        Returns
+        -------
+        df_synthetic: (pandas data frame): dataframe containing the synthetic dataset
+    """
 
-    log_X = np.log1p(X)
+    synth_dfs = []
 
-    means = log_X.mean().values
-    covariance_matrix = log_X.cov().values
+    per_class_n = n // 3
 
-    lognormal_matrix = np.random.multivariate_normal(means,covariance_matrix, size = 3000)
-    normal_matrix = np.expm1(lognormal_matrix)
-    normal_matrix = np.clip(normal_matrix, a_min = 0, a_max = None) # just to ensure no small negatives due to the exp(X) - 1
+    for label in [0, 1, 2]:
 
-    df_synthetic = pd.DataFrame(normal_matrix, columns=COLS)
-    df_synthetic = df_synthetic.astype(float)
+        split_data = data[data.iloc[:,-1] == label]
+        
+        if len(split_data) < 2:
+            continue
 
-    return df_synthetic
+        X = split_data[COLS]
+
+        log_X = np.log1p(X)
+
+        means = log_X.mean().values
+        covariance_matrix = log_X.cov().values
+
+        lognormal_matrix = np.random.multivariate_normal(means,covariance_matrix, size = per_class_n)
+        normal_matrix = np.expm1(lognormal_matrix)
+        normal_matrix = np.clip(normal_matrix, a_min = 0, a_max = None) # just to ensure no small negatives due to the exp(X) - 1
+
+        df_synthetic = pd.DataFrame(normal_matrix, columns=COLS)
+        df_synthetic = df_synthetic.astype(float)
+        df_synthetic["Classification"] = label
+        synth_dfs.append(df_synthetic)
+
+    df = pd.concat(synth_dfs, ignore_index = True)
+
+    return df
 
 
 def assignClasses(data): #assign low (0), medium (1), and high (2) ROI classifications based on calculated ROI
@@ -38,19 +64,6 @@ def assignClasses(data): #assign low (0), medium (1), and high (2) ROI classific
     data["Class"] = pd.qcut(data["ROI"], q = 3, labels = False)
 
     return data
-
-# -------------------
-# Running Program
-# -------------------
-
-
-path = "TH_DATA_BY_PROJECT_FINAL.csv" #change directory if needed, defaulting to current directory
-df = pd.read_csv(path) 
-
-s_data = multivariateLognormalDistribution(df)
-s_data = assignClasses(s_data)
-
-s_data.to_csv("SYNTHETIC_DATA.csv")
 
 
 
