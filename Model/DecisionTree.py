@@ -74,8 +74,15 @@ class DecisionTree():
         min_feature_val = None
         g1_min, g2_min = np.array([]), np.array([])
 
-        for i in range(np.size(data, axis = 1) - 1):
+        total_features = np.size(data,1) - 1
+        num_features_to_check = int(np.sqrt(total_features)) + 1 
+
+        feature_indices = np.random.choice(total_features, num_features_to_check, replace = False)
+
+        for i in feature_indices:
             unique_vals = np.unique(data[:,i]) 
+            if len(unique_vals) > 20:
+                unique_vals = np.random.choice(unique_vals, 20, replace=False)
             for val in unique_vals:
                 g1,g2 = self.split(data,val,i)
                 if len(g1) == 0 or len(g2) == 0:
@@ -104,18 +111,22 @@ class DecisionTree():
     def impurity(self, data):
         """ Finds Gini impurity for a given group of data"""
 
-        sum = 1
+        length = len(data)
 
-        for i in range(self.num_classifications):
-            sum -= (self.getClassificationProb(data, i)) ** 2
+        if length == 0:
+            return 0
 
-        return sum
+        _, counts = np.unique(data[:,-1], return_counts = True)
+
+        probs = counts / length
+
+        return 1 - np.sum(probs ** 2)
     
 
     def getClassificationProb(self, data, classification):
-        """Finds the frequency of a given classification for a group of data"""
+         """Finds the frequency of a given classification for a group of data"""
 
-        return np.sum(data[:, -1] == classification) / np.size(data, axis=0)
+         return np.sum(data[:, -1] == classification) / np.size(data, axis=0)
 
     def createTree(self, data, current_depth):
 

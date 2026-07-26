@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import DecisionTree as dt
 import SyntheticData as sd
+from sklearn.ensemble import RandomForestClassifier
+import CrossValidation as cv
+import concurrent.futures as cf
 
 
 # ------------
@@ -15,10 +18,10 @@ NUM_CLASSIFICATIONS = 3
 # ------------------
 
 NUM_TREES = 100
-NUM_SPLITTING_FEATURES = 5
-BOOTSTRAP_SAMPLE_SIZE = 163
+NUM_SPLITTING_FEATURES = 3
+BOOTSTRAP_SAMPLE_SIZE = 1500
 MAX_DEPTH = 7
-MIN_SAMPLES = 1
+MIN_SAMPLES = 5
 MIN_INFORMATION = 0
 WITH_REPLACEMENT = True
 
@@ -53,21 +56,21 @@ class RandomForest():
         return indices
 
 
-    def getSplittingFeatures(self, data):
-        """Takes in data outouts a random sample of the features with size num_splitting_features"""
+    # def getSplittingFeatures(self, data):
+    #     """Takes in data outouts a random sample of the features with size num_splitting_features"""
 
-        high = np.size(data,1)
+    #     high = np.size(data,1)
 
-        gen = np.random.default_rng()
+    #     gen = np.random.default_rng()
 
-        splitting_features = gen.integers(0, high, self.num_splitting_features)
+    #     splitting_features = gen.integers(0, high, self.num_splitting_features)
 
-        return splitting_features
+    #     return splitting_features
 
     def createForest(self, X_values, y_values):
         """Creates the forest"""
 
-        forest = np.empty(self.num_trees, dtype = dt.DecisionTree)
+        forest = []
 
         for i in range(self.num_trees):
             bootstrap_indices = self.bootstrappingSample(y_values)
@@ -77,12 +80,13 @@ class RandomForest():
             tree = dt.DecisionTree(self.max_depth, self.min_samples, self.min_information, self.num_classifications)
             tree.train(bootstrap_X, bootstrap_Y)
 
-            forest[i] = tree
+            forest.append(tree)
 
-        return forest
+        return np.array(forest, dtype = dt.DecisionTree)
+
 
         
-    def train(self, X_values, y_values):
+    def fit(self, X_values, y_values):
     
         self.forest = self.createForest(X_values, y_values)
 
@@ -108,7 +112,7 @@ class RandomForest():
         return averaged_probs
 
 
-    def prediction(self, data):
+    def predict(self, data):
 
         preds = np.argmax(self.forestPrediction(data), axis = 1)
 
@@ -121,56 +125,41 @@ class RandomForest():
 
 
 # ---------------------------------
-# Testing the forest with the data (need to add k-fold cross validation)
+# Testing the forest with the data
 # ---------------------------------
 
 path = "TH_DATA_BY_PROJECT_FINAL.csv" #change directory if needed, defaulting to current directory
 df = pd.read_csv(path) 
 
-# Testing here with integrating the synthetic data, considering implementing it with cross validation when that's implemented
-# We would need to generate a synthetic data set for every fold in order to prevent data leakage
-
-s_data = sd.multivariateLognormalDistribution(df)
-s_data = sd.assignClasses(s_data)
-
-FeatureColumns = ["Initial Assessment","Income",
+feature_columns = ["Initial Assessment","Income",
                         "Distance To Downtown","Distance To Nearest Transit Stop",
                          "Cost Per Unit","Distance to Nearest Park",
                         "Distance to Nearest Public School"]
 
-X_r = df[FeatureColumns].values
-y_r = df["Classification"].values
+synth_columns = ["EstProjectCost", "Initial Assessment", "Final Assessment", "Income", "Distance To Downtown",
+         "Distance To Nearest Transit Stop", "Cost Per Unit", "Distance to Nearest Park", "Distance to Nearest Public School", "Classification"]
 
-X_s = s_data[FeatureColumns].values
-y_s = s_data["Class"].values
 
-X = np.concatenate((X_r,X_s),0) 
-y = np.concatenate((y_r,y_s),0)
+my_forest = RandomForest(NUM_TREES, NUM_SPLITTING_FEATURES, BOOTSTRAP_SAMPLE_SIZE, MAX_DEPTH, MIN_SAMPLES, MIN_INFORMATION, NUM_CLASSIFICATIONS, WITH_REPLACEMENT)
 
-split_index = int(np.floor(np.size(y)*0.75))
-
-X_train = X[:split_index, :].copy()
-X_test = X[split_index:,:].copy()
-
-y_train = y[:split_index].copy()
-y_test = y[split_index:].copy()
-
-tree = RandomForest(NUM_TREES, NUM_SPLITTING_FEATURES, BOOTSTRAP_SAMPLE_SIZE, MAX_DEPTH, MIN_SAMPLES, MIN_INFORMATION, NUM_CLASSIFICATIONS, WITH_REPLACEMENT)
-tree.train(X_train,y_train)
-
-train_preds = tree.prediction(X_train)
+confusion_matrix, training_accuracy, training_F1, test_accuracy, test_F1 = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, my_forest, 10, 3000)
 
 print("Training Performance")
-print("Size: ", len(y_train))
-print("True Preds: ", sum(y_train == train_preds))
-print("Train Accuracy: ", sum(y_train == train_preds)/len(y_train))
-
-test_preds = tree.prediction(X_test)
+print("Train Accuracy: ", training_accuracy)
+print("F1 Score: ", training_F1)
 
 print("Test Performance")
-print("Size: ", len(y_test))
-print("True Preds: ", sum(y_test == test_preds))
-print("Train Accuracy: ", sum(y_test == test_preds)/len(y_test))  
-
-
+print("Test Accuracy: ", test_accuracy)
+print("F1 Score: ", test_F1)  
     
+sk_forest = RandomForestClassifier(n_estimators = NUM_TREES,max_depth = MAX_DEPTH, min_samples_leaf = 1, max_features = NUM_SPLITTING_FEATURES, bootstrap = True, max_samples = BOOTSTRAP_SAMPLE_SIZE)
+
+confusion_matrix_sk, training_accuracy_sk, training_F1_sk, test_accuracy_sk, test_F1_sk = cv.syntheticKFoldCrossValidation(df, feature_columns, synth_columns, sk_forest, 10, 3000)
+
+print("Training Performance SK")
+print("Train Accuracy: ", training_accuracy_sk)
+print("F1_Score: ", training_F1_sk)
+
+print("Test Performance SK")
+print("Test Accuracy: ", test_accuracy_sk)
+print("F1 Score: ", test_F1_sk)  
