@@ -38,7 +38,15 @@ class TreeNode():
 class DecisionTree():
     """ Decision Tree Classifier """
 
-    def __init__(self, max_depth, min_samples, min_information, num_classifications):
+    def __init__(
+        self,
+        max_depth,
+        min_samples,
+        min_information,
+        num_classifications,
+        num_splitting_features=None,
+        random_state=None,
+    ):
 
         """ Decision Tree Classifier, takes in max_depth, min_samples, min_information, num_classification"""
 
@@ -46,6 +54,8 @@ class DecisionTree():
         self.min_samples = min_samples
         self.min_information = min_information
         self.num_classifications = num_classifications
+        self.num_splitting_features = num_splitting_features
+        self.rng = np.random.default_rng(random_state)
 
     def bestSplit(self, data):
         """Finds the best split based of the lowest Gini impurity by splitting on every unique value in a given feature column
@@ -75,14 +85,22 @@ class DecisionTree():
         g1_min, g2_min = np.array([]), np.array([])
 
         total_features = np.size(data,1) - 1
-        num_features_to_check = int(np.sqrt(total_features)) + 1 
+        if self.num_splitting_features is None:
+            num_features_to_check = int(np.sqrt(total_features)) + 1
+        else:
+            num_features_to_check = self.num_splitting_features
+        num_features_to_check = min(max(1, num_features_to_check), total_features)
 
-        feature_indices = np.random.choice(total_features, num_features_to_check, replace = False)
+        feature_indices = self.rng.choice(
+            total_features,
+            num_features_to_check,
+            replace=False,
+        )
 
         for i in feature_indices:
             unique_vals = np.unique(data[:,i]) 
             if len(unique_vals) > 20:
-                unique_vals = np.random.choice(unique_vals, 20, replace=False)
+                unique_vals = self.rng.choice(unique_vals, 20, replace=False)
             for val in unique_vals:
                 g1,g2 = self.split(data,val,i)
                 if len(g1) == 0 or len(g2) == 0:
@@ -177,7 +195,7 @@ class DecisionTree():
             if node.left is None and node.right is None:
                 return node.prediction_probs
 
-            if x[node.feature_index] < node.feature_val:
+            if x[node.feature_index] <= node.feature_val:
                 node = node.left
             else:
                 node = node.right

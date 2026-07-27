@@ -1,0 +1,4 @@
+class,precision,recall,f1,support
+Low ROI,0.33482142857142855,1.0,0.5016722408026756,75
+Medium ROI,0.0,0.0,0.0,74
+High ROI,0.0,0.0,0.0,75

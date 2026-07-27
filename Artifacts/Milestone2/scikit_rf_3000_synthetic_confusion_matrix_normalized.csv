@@ -1,0 +1,4 @@
+,predicted_Low ROI,predicted_Medium ROI,predicted_High ROI
+actual_Low ROI,0.48,0.32,0.2
+actual_Medium ROI,0.28378378378378377,0.44594594594594594,0.2702702702702703
+actual_High ROI,0.36,0.28,0.36

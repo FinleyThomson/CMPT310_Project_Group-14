@@ -12,24 +12,28 @@ COLS = ["EstProjectCost", "Initial Assessment", "Final Assessment", "Income", "D
 # Functions
 #------------
 
-def multivariateLognormalDistributionGeneration(data, n): 
+def multivariateLognormalDistributionGeneration(data, n, random_state=None):
     """Creates a multivariate lognormal distribution and then exponeniates in order to ensure positivty of features when generating the synthetic dataset.
     
         Parameters
         ----------
         data: (nparray) dataset to create the synthetic set from
         n: (int) number of datapoints in the synthetic set
+        random_state: (int or None) optional seed for reproducible generation
 
         Returns
         -------
         df_synthetic: (pandas data frame): dataframe containing the synthetic dataset
     """
 
+    if n < 0:
+        raise ValueError("n must be non-negative")
+
+    rng = np.random.default_rng(random_state)
     synth_dfs = []
+    base_class_n = n // 3
 
-    per_class_n = n // 3
-
-    for label in [0, 1, 2]:
+    for class_index, label in enumerate([0, 1, 2]):
 
         split_data = data[data.iloc[:,-1] == label]
         
@@ -43,7 +47,8 @@ def multivariateLognormalDistributionGeneration(data, n):
         means = log_X.mean().values
         covariance_matrix = log_X.cov().values
 
-        lognormal_matrix = np.random.multivariate_normal(means,covariance_matrix, size = per_class_n)
+        class_n = base_class_n + (class_index < n % 3)
+        lognormal_matrix = rng.multivariate_normal(means,covariance_matrix, size = class_n)
         normal_matrix = np.expm1(lognormal_matrix)
         normal_matrix = np.clip(normal_matrix, a_min = 0, a_max = None) # just to ensure no small negatives due to the exp(X) - 1
 
