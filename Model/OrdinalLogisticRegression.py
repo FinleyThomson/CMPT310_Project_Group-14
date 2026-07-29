@@ -15,7 +15,7 @@ class Regressor:
 
     def tandb(self, x_values):
         self.b = np.zeros(np.size(x_values,axis=1))
-        self.t = -1 + (2 * np.arange(1, self.num_classes-2))/(self.num_classes-1)
+        self.t = np.arange(self.num_classes - 1)
 
     def A_to_T(self, A, j):
         return A[0] + np.sum(np.exp(A[1:j]))
@@ -213,7 +213,7 @@ def main():
             "Cost Per Unit",
             "Distance to Nearest Park",
             "Distance to Nearest Public School",
-            "Classification",
+            "Classification"
         ]
 
     regressor = Regressor(100, 0.01, 3, 32)

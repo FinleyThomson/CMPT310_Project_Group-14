@@ -84,6 +84,10 @@ def syntheticKFoldCrossValidation(
 
     target_col = synthetic_info_cols[-1]
     real_data = data[synthetic_info_cols+["ROI"]].copy()
+    series = real_data[["ROI","Classification"]].values
+    real_data = real_data.drop(columns=["Classification","ROI"])
+    real_data[["ROI","Classification"]] = series
+    real_data["Classification"] = real_data["Classification"].astype(int)
     y_all = real_data[target_col].to_numpy()
     class_labels = np.sort(np.unique(y_all))
 
@@ -105,10 +109,12 @@ def syntheticKFoldCrossValidation(
     all_actuals: list[np.ndarray] = []
     all_predictions: list[np.ndarray] = []
 
-    classes = np.unique(real_data.values)
+    classes = np.unique(real_data[target_col].values)
+    num_classes = len(classes)
     thresholds = []
-    for category in classes:
-        max_value = real_data.loc[real_data[target_col] == category, "ROI"].max()
+    for category in range(num_classes - 1): 
+        cats = real_data.loc[real_data[target_col] == category, "ROI"]
+        max_value = cats.max()
         thresholds.append(max_value)
 
     for fold_number, (train_indices, test_indices) in enumerate(
@@ -135,6 +141,8 @@ def syntheticKFoldCrossValidation(
                 n,
                 random_state=fold_seed,
             )
+            vals, conts = np.unique(synth_data["Classification"].values, return_counts=True)
+            print(vals, conts)
             training_data = pd.concat(
                 [train_real, synth_data],
                 ignore_index=True,
@@ -142,10 +150,12 @@ def syntheticKFoldCrossValidation(
         else:
             training_data = train_real
         if preprocess:
+            cla = training_data["Classification"]
             training_data = pre.preprocess(training_data, feature_cols)
+            training_data["Classification"] = cla
 
         X_train = training_data[feature_cols].to_numpy()
-        y_train = training_data[target_col].to_numpy()
+        y_train = training_data[target_col].astype(int).to_numpy()
 
         model.fit(X_train, y_train)
         training_predictions = np.asarray(model.predict(X_train))
