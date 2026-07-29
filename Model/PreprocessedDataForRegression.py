@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
+import itertools
 
-# df = pd.read_csv("C:\\Users\\finle\\Documents\\CMPT 310\\Project\\Data\\MASTER\\TH_DATA_BY_PROJECT_FINAL.csv")
+
 
 # FeatureColumns = ["Initial Assessment","Income",
 #                        "Distance To Downtown","Distance To Nearest Transit Stop",
@@ -11,16 +12,21 @@ import pandas as pd
 def preprocess(df, FeatureColumns):
     """ Normalizes all of the features in FeatureColumns by column, only standard normalization, no one-hot encoding.
     
-        Parameters:
-        df (pandas DataFrame): Contains all of the data
-        FeatureColumns (list): List of column names 
+        Parameters
+        ----------
+        df (pandas DataFrames): Contains all of the data
+        FeatureColumns (2D list): Lists of column names 
     
-        Returns:
+        Returns
+        -------
         X (numpy array):  Matrix of size number_of_features x number_of_samples
 
     """
 
-    FeatureColumnsNormalized = []
+
+    # FeatureColumnsNormalized = []
+
+    dfn = pd.DataFrame()
 
     for col in FeatureColumns:
 
@@ -32,14 +38,14 @@ def preprocess(df, FeatureColumns):
         if sigma == 0:
             sigma ==1
         
-        df[col+" Normalized"] = df[col].apply(lambda x: (x-mu)/sigma) #Normalize the features
+        dfn[col] = df[col].apply(lambda x: (x-mu)/sigma) #Normalize the features
 
-        FeatureColumnsNormalized.append(col+" Normalized") #Store normalized column names
+        #FeatureColumnsNormalized.append(col+" Normalized") #Store normalized column names
 
 
-    X = df[FeatureColumnsNormalized].values #Copy normalized feature values into array
+    #X = dfn[FeatureColumns].values #Copy normalized feature values into array
 
-    return X
+    return dfn
 
 # X = preprocess(df, FeatureColumns)
 

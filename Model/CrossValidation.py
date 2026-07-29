@@ -18,6 +18,7 @@ from sklearn.model_selection import StratifiedKFold
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Data.Code import SyntheticData as sd
+import PreprocessedDataForRegression as pre
 
 
 def syntheticKFoldCrossValidation(
@@ -30,6 +31,7 @@ def syntheticKFoldCrossValidation(
     random_state: int | None = 310,
     return_details: bool = False,
     verbose: bool = True,
+    preprocess: bool = False
 ):
     """Evaluate a classifier with stratified K-fold cross-validation.
 
@@ -56,6 +58,8 @@ def syntheticKFoldCrossValidation(
         dictionary.  The default preserves the original five-value return.
     verbose:
         Print the real/synthetic train and real test sizes for each fold.
+    preprocess:
+        preprocess the data if True.
 
     Returns
     -------
@@ -79,7 +83,7 @@ def syntheticKFoldCrossValidation(
         raise ValueError(f"Missing required columns: {missing_columns}")
 
     target_col = synthetic_info_cols[-1]
-    real_data = data[synthetic_info_cols].copy()
+    real_data = data[synthetic_info_cols+["ROI"]].copy()
     y_all = real_data[target_col].to_numpy()
     class_labels = np.sort(np.unique(y_all))
 
@@ -101,20 +105,33 @@ def syntheticKFoldCrossValidation(
     all_actuals: list[np.ndarray] = []
     all_predictions: list[np.ndarray] = []
 
+    classes = np.unique(real_data.values)
+    thresholds = []
+    for category in classes:
+        max_value = real_data.loc[real_data[target_col] == category, "ROI"].max()
+        thresholds.append(max_value)
+
     for fold_number, (train_indices, test_indices) in enumerate(
         splitter.split(real_data, y_all),
         start=1,
     ):
+        
         train_real = real_data.iloc[train_indices].reset_index(drop=True)
         test_real = real_data.iloc[test_indices].reset_index(drop=True)
 
-        X_test = test_real[feature_cols].to_numpy()
-        y_test = test_real[target_col].to_numpy()
+        if preprocess:
+            X_test = pre.preprocess(test_real,feature_cols).to_numpy()
+            y_test = test_real[target_col].to_numpy()
+        else:
+            X_test = test_real[feature_cols].to_numpy()
+            y_test = test_real[target_col].to_numpy()
 
         if n:
             fold_seed = None if random_state is None else random_state + fold_number
             synth_data = sd.multivariateLognormalDistributionGeneration(
                 train_real,
+                synthetic_info_cols,
+                thresholds,
                 n,
                 random_state=fold_seed,
             )
@@ -124,6 +141,8 @@ def syntheticKFoldCrossValidation(
             )
         else:
             training_data = train_real
+        if preprocess:
+            training_data = pre.preprocess(training_data, feature_cols)
 
         X_train = training_data[feature_cols].to_numpy()
         y_train = training_data[target_col].to_numpy()
