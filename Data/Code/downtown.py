@@ -2,7 +2,7 @@ from haversine import haversine
 import pandas as pd
 import re
 
-th = pd.read_csv("C:/Users/finle/Documents/CMPT 310/Project/Data/MASTER/TH_BY_PROJECT.csv")
+th = pd.read_csv("TH_BY_PROJECT.csv")
 
 point = [51.0447331,-114.0718831] #alr in lat lon format
 
