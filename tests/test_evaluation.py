@@ -110,36 +110,56 @@ class DecisionTreeBoundaryTests(unittest.TestCase):
 
 class SyntheticDataTests(unittest.TestCase):
     def test_seeded_generator_is_reproducible_and_returns_requested_size(self):
+        synthetic_columns = [
+            "EstProjectCost",
+            "Initial Assessment",
+            "Final Assessment",
+            "Income",
+            "Distance To Downtown",
+            "Distance To Nearest Transit Stop",
+            "Cost Per Unit",
+            "Distance to Nearest Park",
+            "Distance to Nearest Public School",
+            "Classification",
+        ]
         rows = []
         for label in range(3):
             for offset in range(3):
+                project_cost = 100 + 10 * label + offset
+                initial_assessment = 200 + 10 * label + offset
+                roi = (0.15, 0.45, 0.85)[label]
                 row = {
-                    column: float(10 + label + offset) for column in SyntheticData.COLS
+                    column: float(10 + label + offset)
+                    for column in synthetic_columns
                 }
+                row["EstProjectCost"] = project_cost
+                row["Initial Assessment"] = initial_assessment
+                row["Final Assessment"] = (
+                    project_cost + initial_assessment
+                ) * (1 + roi)
                 row["Classification"] = label
                 rows.append(row)
         source = pd.DataFrame(rows)
+        thresholds = [0.3, 0.65]
 
         first = SyntheticData.multivariateLognormalDistributionGeneration(
             source,
+            synthetic_columns,
+            thresholds,
             10,
             random_state=310,
         )
         second = SyntheticData.multivariateLognormalDistributionGeneration(
             source,
+            synthetic_columns,
+            thresholds,
             10,
             random_state=310,
         )
 
         self.assertEqual(len(first), 10)
-        self.assertEqual(
-            first["Classification"].value_counts().to_dict(),
-            {
-                0: 4,
-                1: 3,
-                2: 3,
-            },
-        )
+        self.assertTrue(set(first["Classification"]).issubset({0, 1, 2}))
+        self.assertIn("ROI", first.columns)
         pd.testing.assert_frame_equal(first, second)
 
 

@@ -14,11 +14,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Data.Code import SyntheticData as sd
-import PreprocessedDataForRegression as pre
 
 
 def syntheticKFoldCrossValidation(
@@ -31,7 +31,7 @@ def syntheticKFoldCrossValidation(
     random_state: int | None = 310,
     return_details: bool = False,
     verbose: bool = True,
-    preprocess: bool = False
+    preprocess: bool = False,
 ):
     """Evaluate a classifier with stratified K-fold cross-validation.
 
@@ -76,18 +76,19 @@ def syntheticKFoldCrossValidation(
     if not synthetic_info_cols:
         raise ValueError("synthetic_info_cols must include a target column")
 
-    missing_columns = sorted(
-        (set(feature_cols) | set(synthetic_info_cols)) - set(data.columns)
-    )
+    required_columns = set(feature_cols) | set(synthetic_info_cols)
+    if n:
+        required_columns.add("ROI")
+    missing_columns = sorted(required_columns - set(data.columns))
     if missing_columns:
         raise ValueError(f"Missing required columns: {missing_columns}")
 
     target_col = synthetic_info_cols[-1]
-    real_data = data[synthetic_info_cols+["ROI"]].copy()
-    series = real_data[["ROI","Classification"]].values
-    real_data = real_data.drop(columns=["Classification","ROI"])
-    real_data[["ROI","Classification"]] = series
-    real_data["Classification"] = real_data["Classification"].astype(int)
+    selected_columns = list(synthetic_info_cols)
+    if n:
+        selected_columns.append("ROI")
+    real_data = data[selected_columns].copy()
+    real_data[target_col] = real_data[target_col].astype(int)
     y_all = real_data[target_col].to_numpy()
     class_labels = np.sort(np.unique(y_all))
 
@@ -109,30 +110,24 @@ def syntheticKFoldCrossValidation(
     all_actuals: list[np.ndarray] = []
     all_predictions: list[np.ndarray] = []
 
-    classes = np.unique(real_data[target_col].values)
-    num_classes = len(classes)
-    thresholds = []
-    for category in range(num_classes - 1): 
-        cats = real_data.loc[real_data[target_col] == category, "ROI"]
-        max_value = cats.max()
-        thresholds.append(max_value)
-
     for fold_number, (train_indices, test_indices) in enumerate(
         splitter.split(real_data, y_all),
         start=1,
     ):
-        
         train_real = real_data.iloc[train_indices].reset_index(drop=True)
         test_real = real_data.iloc[test_indices].reset_index(drop=True)
 
-        if preprocess:
-            X_test = pre.preprocess(test_real,feature_cols).to_numpy()
-            y_test = test_real[target_col].to_numpy()
-        else:
-            X_test = test_real[feature_cols].to_numpy()
-            y_test = test_real[target_col].to_numpy()
+        X_test = test_real[feature_cols].to_numpy()
+        y_test = test_real[target_col].to_numpy()
 
         if n:
+            thresholds = [
+                train_real.loc[
+                    train_real[target_col] == category,
+                    "ROI",
+                ].max()
+                for category in class_labels[:-1]
+            ]
             fold_seed = None if random_state is None else random_state + fold_number
             synth_data = sd.multivariateLognormalDistributionGeneration(
                 train_real,
@@ -141,21 +136,20 @@ def syntheticKFoldCrossValidation(
                 n,
                 random_state=fold_seed,
             )
-            vals, conts = np.unique(synth_data["Classification"].values, return_counts=True)
-            print(vals, conts)
             training_data = pd.concat(
                 [train_real, synth_data],
                 ignore_index=True,
             )
         else:
             training_data = train_real
-        if preprocess:
-            cla = training_data["Classification"]
-            training_data = pre.preprocess(training_data, feature_cols)
-            training_data["Classification"] = cla
 
         X_train = training_data[feature_cols].to_numpy()
         y_train = training_data[target_col].astype(int).to_numpy()
+
+        if preprocess:
+            scaler = StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+            X_test = scaler.transform(X_test)
 
         model.fit(X_train, y_train)
         training_predictions = np.asarray(model.predict(X_train))

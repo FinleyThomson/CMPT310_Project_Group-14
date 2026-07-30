@@ -34,7 +34,14 @@ def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n,
     rng = np.random.default_rng(random_state)
 
 
-    X = data[synth_cols]
+    generation_cols = [
+        col for col in synth_cols if col not in {"Classification", "ROI"}
+    ]
+    missing_columns = sorted(set(generation_cols) - set(data.columns))
+    if missing_columns:
+        raise ValueError(f"Missing synthetic-data columns: {missing_columns}")
+
+    X = data[generation_cols]
 
     log_X = np.log1p(X)
 
@@ -45,7 +52,7 @@ def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n,
     normal_matrix = np.expm1(lognormal_matrix)
     normal_matrix = np.clip(normal_matrix, a_min = 0, a_max = None) # just to ensure no small negatives due to the exp(X) - 1
 
-    df_synthetic = pd.DataFrame(normal_matrix, columns=synth_cols)
+    df_synthetic = pd.DataFrame(normal_matrix, columns=generation_cols)
     df_synthetic = df_synthetic.astype(float)
     df_synthetic = assignClass(df_synthetic, thresholds)
     series = df_synthetic[["ROI","Classification"]].values
