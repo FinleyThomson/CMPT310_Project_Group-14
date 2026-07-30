@@ -1,21 +1,4 @@
-# CMPT 310 Project
+# CMPT310-Project
+This project is an artificial intelligence model that takes in various economic and qualitative factors such as location, pricing, size, income level, nearby amenities, etc., to deliver an investment potential rating. More specifically, it classifies the property as having a high, medium, or low return on investment (ROI).
 
-This project classifies Toronto housing projects as having low, medium, or
-high return on investment (ROI) from economic and location features.
-
-## Run the evaluation
-
-```bash
-python -m pip install -r requirements.txt
-python -m Model.EvaluateModels --models dummy sklearn custom
-```
-
-The command performs reproducible 5-fold cross-validation on held-out real
-projects and saves metrics, confusion matrices, and comparison plots in
-`Artifacts/Milestone2`.
-
-Run the checks with:
-
-```bash
-python -m unittest discover -s tests -v
-```
+Compiled here is the work we have accomplished thusfar, organized into the Data, Model, and Writeup folders and their respective subfolders. It may be noted that some raw data files exceed the upload limit on GitHub and therefore have been omitted from upload into the raw data section. Everything of current relevance that can be provided in the repository has been.
