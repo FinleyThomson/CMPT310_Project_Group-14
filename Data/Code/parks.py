@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-df = pd.read_csv("C:/Users/finle/Documents/CMPT 310/Project/Data/MASTER/Code/Schools_20260722.csv")
+df = pd.read_csv("Schools_20260722.csv")
 
 df["POINT"] = df["POINT"].str.replace(r"[a-zA-Z/(/)]", "", regex=True)
 df["POINT"] = df["POINT"].str.split()
