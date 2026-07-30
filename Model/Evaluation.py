@@ -225,6 +225,14 @@ def save_model_comparison(
     plot_path = output_dir / "model_comparison.png"
     comparison.to_csv(table_path, index=False)
 
+    fold_counts = {
+        int(evaluation["summary"]["folds"]) for evaluation in evaluations
+    }
+    validation_label = (
+        f"{next(iter(fold_counts))}-fold"
+        if len(fold_counts) == 1
+        else "Cross-validated"
+    )
     positions = np.arange(len(comparison))
     width = 0.36
     fig, axis = plt.subplots(figsize=(max(8, len(comparison) * 2.4), 5.5))
@@ -247,7 +255,10 @@ def save_model_comparison(
         color="#E07B39",
     )
 
-    axis.set_title("5-fold performance on held-out real projects")
+    axis.set_title(
+        f"{validation_label} performance on held-out real projects\n"
+        "Bars show fold mean ± standard deviation"
+    )
     axis.set_ylabel("Score (higher is better)")
     axis.set_ylim(0, 1)
     axis.set_xticks(positions, comparison["model"], rotation=12, ha="right")
