@@ -3,9 +3,9 @@ import pandas as pd
 import re
 from haversine import haversine
 
-df=pd.read_csv("C:/Users/finle/Documents/CMPT 310/Project/Data/MASTER/code/schools.csv")
+df=pd.read_csv("schools.csv")
 
-th = pd.read_csv("C:/Users/finle/Documents/CMPT 310/Project/Data/MASTER/TH_BY_PROJECT.csv")
+th = pd.read_csv("TH_BY_PROJECT.csv")
 
 th_coords = th["Coordinates"].tolist()
 park_coordss = df["coords"].tolist()
