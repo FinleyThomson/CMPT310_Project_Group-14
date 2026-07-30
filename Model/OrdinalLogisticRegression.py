@@ -65,8 +65,10 @@ class Regressor:
 
         indices = gen.integers(0, size, size = size)
 
-        x_batches = np.array_split(x_values[indices], self.batch_size)
-        y_batches = np.array_split(y_values[indices], self.batch_size)
+        num_batches = len(y_values) // self.batch_size
+
+        x_batches = np.array_split(x_values[indices], num_batches)
+        y_batches = np.array_split(y_values[indices], num_batches)
 
         num_batches = len(y_batches)
         
