@@ -155,7 +155,7 @@ class Regressor:
         self.miniBatchGradientDescent(x_values, y_values)
 
 
-    def getProbs(self, x_values):
+    def proba(self, x_values):
 
         logits = self.getAllLogits(x_values)
 
@@ -171,7 +171,7 @@ class Regressor:
 
     def predict(self, x_values):
 
-        probs = self.getProbs(x_values)
+        probs = self.proba(x_values)
 
         classifications = np.argmax(probs, axis = 1)
 
@@ -226,7 +226,7 @@ def main():
         synth_columns_n,
         regressor,
         k_folds,
-        3000,
+        1200,
         random_state=310,
         preprocess = True
     )

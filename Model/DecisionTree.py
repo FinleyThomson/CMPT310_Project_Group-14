@@ -59,12 +59,10 @@ class DecisionTree():
 
     def bestSplit(self, data):
         """Finds the best split based of the lowest Gini impurity by splitting on every unique value in a given feature column
-
             Parameters
             ----------
             data : 
                 (numpy array) Array of size number_of_features x number_of_samples
-
             Returns
             -------
             g1_min : 
@@ -76,9 +74,7 @@ class DecisionTree():
             min_feature_index : 
                 (float) Index of the splitting feature with lowest impurity
             gini_min : 
-                (float) Impurity of the split that has the mimimum impurity
-        """
-
+                (float) Impurity of the split that has the mimimum impurity """
         gini_min = 1
         min_feature_index = None
         min_feature_val = None
@@ -96,7 +92,6 @@ class DecisionTree():
             num_features_to_check,
             replace=False,
         )
-
         for i in feature_indices:
             unique_vals = np.unique(data[:,i]) 
             if len(unique_vals) > 20:

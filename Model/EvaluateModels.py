@@ -94,7 +94,7 @@ def parse_args() -> argparse.Namespace:
         "--synthetic-samples",
         type=int,
         nargs="+",
-        default=[0, 3000],
+        default=[0, 1200],
         help=(
             "Synthetic rows per training fold. Defaults to a real-only and a "
             "3,000-row augmentation experiment."

@@ -32,6 +32,7 @@ def syntheticKFoldCrossValidation(
     return_details: bool = False,
     verbose: bool = True,
     preprocess: bool = False,
+    asymmetric = False
 ):
     """Evaluate a classifier with stratified K-fold cross-validation.
 
@@ -60,6 +61,8 @@ def syntheticKFoldCrossValidation(
         Print the real/synthetic train and real test sizes for each fold.
     preprocess:
         preprocess the data if True.
+    asymmetric:
+        when running an ensemble, if some models needs synthetic data when some do not
 
     Returns
     -------
@@ -150,8 +153,11 @@ def syntheticKFoldCrossValidation(
             scaler = StandardScaler()
             X_train = scaler.fit_transform(X_train)
             X_test = scaler.transform(X_test)
-
-        model.fit(X_train, y_train)
+        if not asymmetric:
+            model.fit(X_train, y_train)
+        else:
+            leny = len(y_train)
+            model.fit(X_train[0:leny],y_train[0:leny],X_train[leny:],y_train[leny:])
         training_predictions = np.asarray(model.predict(X_train))
         test_predictions = np.asarray(model.predict(X_test))
 

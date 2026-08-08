@@ -1,17 +1,17 @@
 {
-  "created_at_utc": "2026-07-30T02:12:35.357913+00:00",
-  "command": "/home/jarrod/.cache/uv/builds-v0/.tmpASoazM/bin/python -m Model.EvaluateModels --models dummy sklearn custom --output-dir Artifacts/Milestone2",
-  "git_commit": "b5cfbe3a5d6119f36c10f6a946ee07bc6031aa7d",
+  "created_at_utc": "2026-08-07T18:15:12.606818+00:00",
+  "command": "'c:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\.venv\\Scripts\\python.exe' -m Model.EvaluateModels --models dummy sklearn custom",
+  "git_commit": "1890777ac52a25e921a7a622a2abfbd450db2a20",
   "git_worktree_dirty": true,
   "runtime": {
-    "python": "3.12.13",
-    "numpy": "2.5.1",
+    "python": "3.11.9",
+    "numpy": "2.4.6",
     "pandas": "3.0.5",
     "scikit_learn": "1.9.0",
     "matplotlib": "3.11.1"
   },
   "dataset": {
-    "path": "/home/jarrod/sfu/cmpt310/CMPT310_Project_Group-14/Data/CSVs/Sorted/TH_DATA_BY_PROJECT_FINAL.csv",
+    "path": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Data\\CSVs\\Sorted\\TH_DATA_BY_PROJECT_FINAL.csv",
     "sha256": "d1ad8d5d9507c9df93103ee7c3e7857f3e43173f30ad09c89c9a3949fcb96bc9",
     "real_rows": 224,
     "class_counts": {
@@ -29,7 +29,7 @@
     "bootstrap_samples": 1500,
     "requested_synthetic_samples": [
       0,
-      3000
+      1200
     ],
     "models": [
       "dummy",
@@ -96,8 +96,8 @@
       }
     },
     {
-      "model": "scikit RF (+3000 synthetic)",
-      "synthetic_samples_per_fold": 3000,
+      "model": "scikit RF (+1200 synthetic)",
+      "synthetic_samples_per_fold": 1200,
       "model_parameters": {
         "bootstrap": true,
         "ccp_alpha": 0.0,
@@ -106,7 +106,7 @@
         "max_depth": 7,
         "max_features": 3,
         "max_leaf_nodes": null,
-        "max_samples": 1500,
+        "max_samples": 1379,
         "min_impurity_decrease": 0.0,
         "min_samples_leaf": 5,
         "min_samples_split": 2,
@@ -121,12 +121,12 @@
       }
     },
     {
-      "model": "Custom RF (+3000 synthetic)",
-      "synthetic_samples_per_fold": 3000,
+      "model": "Custom RF (+1200 synthetic)",
+      "synthetic_samples_per_fold": 1200,
       "model_parameters": {
         "num_trees": 100,
         "num_splitting_features": 3,
-        "bootstrapping_sample_size": 1500,
+        "bootstrapping_sample_size": 1379,
         "max_depth": 7,
         "min_samples": 5,
         "min_information": 0,
@@ -135,6 +135,6 @@
       }
     }
   ],
-  "comparison_table": "/home/jarrod/sfu/cmpt310/CMPT310_Project_Group-14/Artifacts/Milestone2/model_comparison.csv",
-  "comparison_plot": "/home/jarrod/sfu/cmpt310/CMPT310_Project_Group-14/Artifacts/Milestone2/model_comparison.png"
+  "comparison_table": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Artifacts\\Milestone2\\model_comparison.csv",
+  "comparison_plot": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Artifacts\\Milestone2\\model_comparison.png"
 }

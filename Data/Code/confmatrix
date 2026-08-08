@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 1. Define your new matrices
+cm_real = np.array([
+    [53, 18, 4], 
+    [38, 20, 16], 
+    [46, 15, 14]
+])
+
+cm_synth = np.array([[38, 15, 22],[18, 35, 21],[24, 18, 33]])
+
+# 2. Define the axis labels based on your images
+class_names = ["Low ROI", "Medium ROI", "High ROI"]
+
+# 3. Create a function to perfectly mimic your visual style
+def plot_confusion_matrix(cm, title):
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=120)
+    
+    # seaborn heatmap handles the coloring and text centering automatically
+    sns.heatmap(
+        cm, 
+        annot=True,          # Show the numbers
+        fmt='d',             # Format as integers
+        cmap='Blues',        # Match the blue color scale from your images
+        cbar=False,          # Hide the colorbar on the side
+        square=True,         # Make the boxes square
+        xticklabels=class_names, 
+        yticklabels=class_names,
+        ax=ax
+    ) 
+    
+    # Match your titles and labels
+    ax.set_title(title, pad=10)
+    ax.set_ylabel('Actual ROI class')
+    ax.set_xlabel('Predicted ROI class')
+    
+    # Rotate the x-labels so they are horizontal (default is sometimes vertical)
+    plt.xticks(rotation=0)
+    plt.yticks(rotation=0)
+    
+    plt.tight_layout()
+    plt.show()
+
+# 4. Generate the plots
+plot_confusion_matrix(cm_real, "Custom OLR (real only): held-out real projects (counts)")
+plot_confusion_matrix(cm_synth, "Custom OLR (+1200 synthetic): held-out real projects (counts)")

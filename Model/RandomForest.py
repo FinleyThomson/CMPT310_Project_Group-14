@@ -78,17 +78,6 @@ class RandomForest():
         return indices
 
 
-    # def getSplittingFeatures(self, data):
-    #     """Takes in data outouts a random sample of the features with size num_splitting_features"""
-
-    #     high = np.size(data,1)
-
-    #     gen = np.random.default_rng()
-
-    #     splitting_features = gen.integers(0, high, self.num_splitting_features)
-
-    #     return splitting_features
-
     def createForest(self, X_values, y_values):
         """Creates the forest"""
 
@@ -129,7 +118,7 @@ class RandomForest():
          return prediction_probs #2D Array
 
 
-    def forestPrediction(self, data):
+    def proba(self, data):
         """Returns the prediction for the whole forest of a set of data."""
 
         prediction_probs = []
@@ -144,7 +133,7 @@ class RandomForest():
 
     def predict(self, data):
 
-        preds = np.argmax(self.forestPrediction(data), axis = 1)
+        preds = np.argmax(self.proba(data), axis = 1)
 
         return preds
 

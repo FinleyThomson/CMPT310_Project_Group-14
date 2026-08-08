@@ -41,25 +41,43 @@ def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n,
     if missing_columns:
         raise ValueError(f"Missing synthetic-data columns: {missing_columns}")
 
-    X = data[generation_cols]
+    data = assignClass(data.copy(), thresholds)
+    target_classes = data["Classification"].unique()
+    samples_per_class = n // len(target_classes)
 
-    log_X = np.log1p(X)
+    synth_pieces = []
 
-    means = log_X.mean().values
-    covariance_matrix = log_X.cov().values
-    
-    lognormal_matrix = rng.multivariate_normal(means,covariance_matrix, size = n)
-    normal_matrix = np.expm1(lognormal_matrix)
-    normal_matrix = np.clip(normal_matrix, a_min = 0, a_max = None) # just to ensure no small negatives due to the exp(X) - 1
+    for cls in target_classes:
 
-    df_synthetic = pd.DataFrame(normal_matrix, columns=generation_cols)
-    df_synthetic = df_synthetic.astype(float)
-    df_synthetic = assignClass(df_synthetic, thresholds)
-    series = df_synthetic[["ROI","Classification"]].values
-    df_synthetic = df_synthetic.drop(columns=["Classification","ROI"])
-    df_synthetic[["ROI","Classification"]] = series
+        X = data[data["Classification"] == cls][generation_cols]
+        log_X = np.log1p(X)
 
-    return df_synthetic
+        means = log_X.mean().values
+        covariance_matrix = log_X.cov().values
+        
+        lognormal_matrix = rng.multivariate_normal(means,covariance_matrix, size = samples_per_class)
+        normal_matrix = np.expm1(lognormal_matrix)
+        normal_matrix = np.abs(normal_matrix) # just to ensure no small negatives due to the exp(X) - 1
+
+        df_synthetic = pd.DataFrame(normal_matrix, columns=generation_cols)
+        df_synthetic = df_synthetic.astype(float)
+        #df_synthetic = assignClass(df_synthetic, thresholds)
+
+        # df_valid = df_synthetic[df_synthetic["Classification"] == cls]
+
+        # take_n = min(samples_per_class, len(df_valid)) #stuff here to ensure we have correct number
+        # synth_pieces.append(df_valid.sample(n=samples_per_class, replace=(take_n < samples_per_class)))
+
+        # series = df_synthetic[["ROI","Classification"]].values
+        # df_synthetic = df_synthetic.drop(columns=["Classification","ROI"])
+        # df_synthetic[["ROI","Classification"]] = series
+        
+        df_synthetic["Classification"] = cls
+        synth_pieces.append(df_synthetic)
+
+    df_final = pd.concat(synth_pieces).sample(frac=1, random_state=random_state)
+
+    return df_final
 
 
 def assignClasses(data, thresholds): #assign low (0), medium (1), and high (2) ROI Classification based on calculated ROI
