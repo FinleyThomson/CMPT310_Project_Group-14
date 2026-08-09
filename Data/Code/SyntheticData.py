@@ -12,7 +12,7 @@ import pandas as pd
 # Functions
 #------------
 
-def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n, random_state=None):
+def multivariateLognormalDistributionGeneration(data, synth_cols, n, random_state=None):
     """Creates a multivariate lognormal distribution and then exponeniates in order to ensure positivty of features when generating the synthetic dataset.
     
         Parameters
@@ -20,7 +20,6 @@ def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n,
         data: (nparray) dataset to create the synthetic set from
         n: (int) number of datapoints in the synthetic set
         synth_cols: (list) list of columns to be used in the generation of synthetic data fron data
-        thresholds: (list) list of floats representing upper cut off points for the different Classification
         random_state: (int or None) optional seed for reproducible generation
 
         Returns
@@ -41,7 +40,7 @@ def multivariateLognormalDistributionGeneration(data, synth_cols, thresholds, n,
     if missing_columns:
         raise ValueError(f"Missing synthetic-data columns: {missing_columns}")
 
-    data = assignClass(data.copy(), thresholds)
+
     target_classes = data["Classification"].unique()
     samples_per_class = n // len(target_classes)
 

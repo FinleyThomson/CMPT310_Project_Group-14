@@ -1,13 +1,13 @@
-import RandomForest as rf
-import OrdinalLogisticRegression as ol
+from Model import RandomForest as rf
+from Model import OrdinalLogisticRegression as ol
 import os
 import pandas as pd
-import CrossValidation as cv
+from Model import CrossValidation as cv
 import numpy as np
 
 
 
-class Voter():
+class Voter:
     
     def __init__(self, models, num_tree_synth):
         """Parameters

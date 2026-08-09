@@ -3,21 +3,23 @@ import pandas as pd
 import re
 from haversine import haversine
 
+
+
 df=pd.read_csv("schools.csv")
 
 th = pd.read_csv("TH_BY_PROJECT.csv")
 
 th_coords = th["Coordinates"].tolist()
-park_coordss = df["coords"].tolist()
+feature_coordss = df["coords"].tolist()
 
 i = 0
 
-for p in park_coordss:
+for p in feature_coordss:
     p = re.sub(r"[^0-9 .-]","",p)
     p = p.split()
     p[0] = float(p[0])
     p[1] = float(p[1])
-    park_coordss[i] = p
+    feature_coordss[i] = p
     i+=1
 
 i = 0
@@ -40,7 +42,7 @@ def min_distances(th_coord):
 
     dists = [
 
-        haversine(th_lat_lon, ([park[1],park[0]])) for park in park_coordss
+        haversine(th_lat_lon, ([feature[1],feature[0]])) for feature in feature_coordss
 
     ]
 

@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-import CrossValidation as cv
+from Model import CrossValidation as cv
 import os
-import PreprocessedDataForRegression as pr
+
 
 class Regressor:
 

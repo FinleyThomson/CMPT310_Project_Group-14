@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <style>
+      html, body {
+        min-height: 100%;
+        background-color: darkblue;
+      }
+      body {
+        font-size: 10px; 
+        font-family: Arial, Helvetica, sans-serif;
+        color: rgb(7, 14, 53);
+        display: flex;
+        flex-direction: column; 
+        margin:0;
+        padding:0;
+        min-height: 100vh;
+        background-color: white;
+      }
+      .center_flex{
+        display: flex;
+        justify-content: center; 
+        align-items: center;
+      }
+      .bold{
+        font-weight: bold;
+      }
+      #header{
+        top: 0em;
+        height: 8em;
+        flex-shrink: 0;
+        background-color: white;
+      }
+      #title{
+        color:darkblue;
+        font-size: 3.8em;
+      }
+      #main{
+        box-sizing: border-box;
+        background-color: darkblue; 
+        padding: 5em 5em 0 5em; 
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      #main_overlay{
+        box-sizing: border-box;
+        background-color: white;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+        flex: 1; 
+        padding-top: 2em;
+        padding-bottom: 18em;
+        width: 100%;
+      }
+      #intro_div{
+        background-color: darkblue;
+        min-height: 18em;
+        width: 100em;
+        margin: 0 auto;
+        text-align: center;
+        border-radius: 15px;
+        max-width: 90%;
+      }
+      #intro{
+        color:white;
+        font-size: 2em;
+      }
+      label{
+        font-size: 2em;
+        width: 100%;
+      }
+      select{
+        font-size: 1.85em;
+      }
+      input{
+        font-size: 1.85em;
+      }
+      button{
+        font-size: 2em;
+        background-color: darkblue;
+        color: white;
+        border-radius: 15px;
+        height: 4em;
+        width: 14em;
+        border-color: rgb(1, 1, 21);
+      }
+      option{
+        background-color: white
+      }
+      #pyout{
+        font-size: 2.2em;
+        height: 1.5em;
+        padding-top: 2em
+      }
+      #inputs{
+        padding: 5em 1em;
+      }
+      .input_box{
+        box-sizing: border-box;
+        border-radius: 15px;
+        width: 100%;
+        padding: 0.25em 0em 0.25em 1em
+      }
+      #inputs_inner{
+        width: fit-content;
+      }
+      #result_presenter{
+        height: 4em;
+        background-color: white;
+        text-align: center;
+      }
+      #results{
+        height: 4em;
+        background-color: white;
+      }
+      
+
+    </style>
+  </head>
+  <body>
+    <div id="header" class="center_flex">
+      <h1 id="title" class="bold">Calgary Town House Development ROI Predictor</h1>
+    </div>
+    <div id="main">
+      <div id="main_overlay">
+        <div id="intro_div" class="center_flex bold">
+          <p id="intro">This is an AI tool that can classify a potential town house development site in Cagary 
+            as "Low", "Medium", or "High" ROI based off of some information about the prospective site.<br> 
+            Input the required information below and press the button to recieve the ROI prediciton.</p>
+        </div>
+      
+        <form method="POST">
+      
+          <div id="inputs" class="center_flex bold">
+            <div id="inputs_inner">  
+              <label for="address">Address:</label> 
+              <input type="text" id="address" name="address" class="input_box"><br><br>
+
+              <input type="hidden" id="pylat" name="lat">
+              <input type="hidden" id="pylon" name="lon">
+
+              <label for="nbhood">Calgary Community:</label> 
+              <select name="nbhood" id="community_select" class="input_box">
+                {% for item in community_list %}
+                  <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+              </select><br><br>
+
+              <label for="initial_assessment">Purchase Price:</label> 
+              <input type="text" id="initial_assessment" name="initial_assessment" class="input_box"><br><br>
+
+              <label for="units">Estimated Number of Units:</label> 
+              <input type="text" id="units" name="units" class="input_box"><br><br>
+
+              <label for="model">Choose a Model:</label>
+              <select name="model" id="choices" class="input_box">
+                <option value="rf">Random Forest</option>
+                <option value="olr">Ordinal Logistic Regression</option>
+                <option value="ensemble" selected>Ensemble (default)</option>
+              </select><br><br>
+            </div>    
+          </div>
+
+          <div id="button" class="center_flex bold">
+            <button type="button" onclick="getCoordinates()" class="bold">Get Result</button>
+          </div>
+          
+          <div id="pyout" class="center_flex bold">
+            <div id="result_presenter">
+                <p>The result is:</p><br>
+                <div id="results">
+                  {% if python_result %}
+                    
+                    {{ python_result }}
+
+                  {% endif %}
+                </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+  <script>
+      async function getCoordinates() {
+
+        const address = document.getElementById("address").value;
+        const resultDisplay = document.getElementById('results');
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+
+        try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.length > 0) {
+                    const lat = data[0].lat;
+                    const lon = data[0].lon;
+                    
+                    document.getElementById('pylat').value = lat;
+                    document.getElementById('pylon').value = lon;
+
+                    document.querySelector("form").submit();  
+                    
+                } else {
+                    resultDisplay.innerText = "Address not found.";
+                }
+            } catch (error) {
+                resultDisplay.innerText = "Error connecting to map server.";
+            }
+      }
+  </script>
+</html>
