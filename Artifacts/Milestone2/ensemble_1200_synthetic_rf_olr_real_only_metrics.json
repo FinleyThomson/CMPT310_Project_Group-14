@@ -1,0 +1,33 @@
+{
+  "model": "Ensemble (+1200 synthetic rf, olr real only)",
+  "real_test_samples": 224,
+  "folds": 5,
+  "synthetic_samples_per_fold": 0,
+  "random_state": 310,
+  "feature_columns": [
+    "Initial Assessment",
+    "Income",
+    "Distance To Downtown",
+    "Distance To Nearest Transit Stop",
+    "Cost Per Unit",
+    "Distance to Nearest Park",
+    "Distance to Nearest Public School"
+  ],
+  "model_parameters": {},
+  "test_accuracy": 0.42410714285714285,
+  "fold_test_accuracy_mean": 0.42333333333333334,
+  "fold_test_accuracy_std": 0.10064606117295216,
+  "balanced_accuracy": 0.42378378378378373,
+  "macro_precision": 0.4240604575163398,
+  "macro_recall": 0.42378378378378373,
+  "macro_f1": 0.41973341894787297,
+  "fold_test_macro_f1_mean": 0.416037704020585,
+  "fold_test_macro_f1_std": 0.10640479186001525,
+  "weighted_f1": 0.41987481947222716,
+  "training_accuracy_mean": 0.9542333954065798,
+  "training_macro_f1_mean": 0.9544324255317884,
+  "accuracy_generalization_gap": 0.5309000620732465,
+  "ordinal_mean_absolute_error": 0.7857142857142857,
+  "severe_low_high_errors": 47,
+  "severe_low_high_error_rate": 0.20982142857142858
+}

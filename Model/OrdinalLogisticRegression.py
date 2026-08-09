@@ -6,11 +6,12 @@ import os
 
 class Regressor:
 
-    def __init__(self, max_iter, learning_rate, num_classes, batch_size):
+    def __init__(self, max_iter, learning_rate, num_classes, batch_size, seed):
         self.max_iter = max_iter
         self.learning_rate = learning_rate
         self.num_classes = num_classes
         self.batch_size = batch_size
+        self.rng = np.random.default_rng(seed)
 
 
     def tandb(self, x_values):
@@ -59,11 +60,9 @@ class Regressor:
 
     def miniBatchGradientDescent(self, x_values, y_values):
 
-        gen = np.random.default_rng()
-
         size = np.size(x_values, axis=0)
 
-        indices = gen.integers(0, size, size = size)
+        indices = self.rng.integers(0, size, size = size)
 
         num_batches = len(y_values) // self.batch_size
 

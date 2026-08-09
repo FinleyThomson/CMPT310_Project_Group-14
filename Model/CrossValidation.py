@@ -31,7 +31,7 @@ def syntheticKFoldCrossValidation(
     random_state: int | None = 310,
     return_details: bool = False,
     verbose: bool = True,
-    preprocess: bool = False,
+    preprocess: bool = True,
     asymmetric = False
 ):
     """Evaluate a classifier with stratified K-fold cross-validation.
@@ -135,7 +135,6 @@ def syntheticKFoldCrossValidation(
             synth_data = sd.multivariateLognormalDistributionGeneration(
                 train_real,
                 synthetic_info_cols,
-                thresholds,
                 n,
                 random_state=fold_seed,
             )

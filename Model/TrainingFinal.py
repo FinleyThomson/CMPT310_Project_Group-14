@@ -44,8 +44,8 @@ def main():
                 "Classification"
             ]
 
-    forest = rf.RandomForest(60,3,120,10,7,0,3,True)
-    regressor = ol.Regressor(5000, 0.001, 3, 72)
+    forest = rf.RandomForest(num_trees=60,num_splitting_features=3,bootstrap_sample_size=120,max_depth=10,min_samples=7,min_information=0,num_calssifications=3,with_replacement=True)
+    regressor = ol.Regressor(max_iter=5000, learning_rate=0.001, num_classes=3, batch_size=72)
     training_set_real = data[synth_columns]
     training_set_synth = sd.multivariateLognormalDistributionGeneration(data, synth_columns,900,310)
 
@@ -62,7 +62,7 @@ def main():
     X_real = X_mixed[:len_real]
     X_synth = X_mixed[len_real:]
 
-    ensemble = vo.Voter([forest, regressor], 0)
+    ensemble = vo.Voter(models=[forest, regressor], num_tree_synth=0)
     ensemble.fit(X_real, y_real, X_synth, y_synth)
     joblib.dump(ensemble, 'ensemble.pkl')
 

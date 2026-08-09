@@ -20,6 +20,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+import itertools
 
 import matplotlib
 import numpy as np
@@ -35,6 +36,8 @@ from Model.Evaluation import (
     save_model_comparison,
 )
 from Model.RandomForest import RandomForest
+from Model.OrdinalLogisticRegression import Regressor
+from Model.Voter import Voter
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_PATH = (
@@ -82,8 +85,9 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Directory for CSV, JSON, and PNG evidence.",
+        help="Directory for CSV, JSON, and PNG evidence."
     )
+
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=310)
     parser.add_argument("--trees", type=int, default=100)
@@ -91,21 +95,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-samples", type=int, default=5)
     parser.add_argument("--bootstrap-samples", type=int, default=1500)
     parser.add_argument(
-        "--synthetic-samples",
+            "--synthetic-samples-rf",
+            type=int,
+            nargs="+",
+            default=[0, 900],
+            help=(
+                "Synthetic rows per training fold for the random forest. Defaults to a real-only and a "
+                "900-row augmentation experiment."
+            ),
+        )
+    parser.add_argument(
+        "--synthetic-samples-olr",
         type=int,
         nargs="+",
-        default=[0, 1200],
+        default=[0, 900],
         help=(
-            "Synthetic rows per training fold. Defaults to a real-only and a "
-            "3,000-row augmentation experiment."
+            "Synthetic rows per training fold for ordinial logistic regression. Defaults to a real-only and a "
+            "900-row augmentation experiment."
         ),
     )
+    parser.add_argument("--max-iter", type=int, default=5000)
+    parser.add_argument("--learning-rate", type=float, default=0.001)
+    parser.add_argument("--batch-size", type=int, default=72)
     parser.add_argument(
         "--models",
         nargs="+",
-        choices=("dummy", "sklearn", "custom"),
-        default=("dummy", "sklearn"),
-        help="Models to compare. The custom forest is slower and is opt-in.",
+        choices=("dummy", "sklearn-rf", "custom-rf","custom-olr","custom-ensemble"),
+        default=("dummy", "custom-ensemble"),
+        help="Models to compare.",
     )
     return parser.parse_args()
 
@@ -145,10 +162,11 @@ def main() -> None:
                 data,
                 args,
                 synthetic_samples=0,
+                asymmetric = False
             )
         )
 
-    for synthetic_samples in dict.fromkeys(args.synthetic_samples):
+    for synthetic_samples in dict.fromkeys(args.synthetic_samples_rf):
         estimated_real_train_size = int(len(data) * (args.folds - 1) / args.folds)
         bootstrap_samples = min(
             args.bootstrap_samples,
@@ -176,10 +194,11 @@ def main() -> None:
                     data,
                     args,
                     synthetic_samples,
+                    asymmetric = False
                 )
             )
 
-        if "custom" in args.models:
+        if "custom-rf" in args.models:
             custom_forest = RandomForest(
                 num_trees=args.trees,
                 num_splitting_features=3,
@@ -198,8 +217,84 @@ def main() -> None:
                     data,
                     args,
                     synthetic_samples,
+                    asymmetric = False
                 )
             )
+
+    for synthetic_samples in dict.fromkeys(args.synthetic_samples_olr):
+            estimated_real_train_size = int(len(data) * (args.folds - 1) / args.folds)
+            training_label = (
+                "real only" if synthetic_samples == 0 else f"+{synthetic_samples} synthetic"
+            )
+
+            if "custom-olr" in args.models:
+                custom_regressor = Regressor(
+                    max_iter = args.max_iter,
+                    learning_rate = args.learning_rate,
+                    num_classes = len(CLASS_NAMES),
+                    batch_size = args.batch_size,
+                    seed=args.seed,
+                )
+                evaluations.append(
+                    _run_experiment(
+                        f"Custom OLR ({training_label})",
+                        custom_regressor,
+                        data,
+                        args,
+                        synthetic_samples,
+                        asymmetric = False
+                    )
+                )
+
+    for synthetic_samples_olr in dict.fromkeys(args.synthetic_samples_olr):
+        for synthetic_samples_rf in  dict.fromkeys(args.synthetic_samples_rf):
+                estimated_real_train_size = int(len(data) * (args.folds - 1) / args.folds)
+                bootstrap_samples = min(
+                    args.bootstrap_samples,
+                    estimated_real_train_size + synthetic_samples_rf,
+                )
+                if synthetic_samples_olr == 0 and synthetic_samples_rf == 0:
+                    training_label = "real only"
+                elif synthetic_samples_olr == 0 and synthetic_samples_rf > 0:
+                    training_label = f"+{synthetic_samples_rf} synthetic rf, olr real only"
+                elif synthetic_samples_olr > 0 and synthetic_samples_rf == 0:
+                    training_label = f"+{synthetic_samples_olr} synthetic olr, rf real only"
+                else:
+                    training_label = f"+{synthetic_samples_olr} synthetic olr, +{synthetic_samples_rf} synthetic rf"
+    
+                if "custom-ensemble" in args.models:
+                    custom_regressor = Regressor(
+                        max_iter = args.max_iter,
+                        learning_rate = args.learning_rate,
+                        num_classes = len(CLASS_NAMES),
+                        batch_size = args.batch_size,
+                        seed=args.seed,
+                    )
+                    custom_forest = RandomForest(
+                        num_trees=args.trees,
+                        num_splitting_features=3,
+                        bootstrap_sample_size=bootstrap_samples,
+                        max_depth=args.max_depth,
+                        min_samples=args.min_samples,
+                        min_information=0,
+                        num_classifications=len(CLASS_NAMES),
+                        with_replacement=True,
+                        random_state=args.seed,
+                    )
+                    ensemble = Voter(
+                        models = [custom_forest, custom_regressor],
+                        num_tree_synth = synthetic_samples_rf
+                    )
+                    evaluations.append(
+                        _run_experiment(
+                            f"Ensemble ({training_label})",
+                            ensemble,
+                            data,
+                            args,
+                            synthetic_samples_olr,
+                            asymmetric = True
+                        )
+                    )
 
     table_path, plot_path = save_model_comparison(
         evaluations,
@@ -239,6 +334,7 @@ def _run_experiment(
     data: pd.DataFrame,
     args: argparse.Namespace,
     synthetic_samples: int,
+    asymmetric: bool
 ):
     print(f"\nEvaluating {model_name}")
     result = cv.syntheticKFoldCrossValidation(
@@ -251,6 +347,7 @@ def _run_experiment(
         random_state=args.seed,
         return_details=True,
         verbose=True,
+        asymmetric = asymmetric
     )
     result["feature_columns"] = FEATURE_COLUMNS
     result["model_parameters"] = _model_parameters(model)
@@ -301,6 +398,10 @@ def _model_parameters(model) -> dict:
         "min_information",
         "num_classifications",
         "with_replacement",
+        "max_iter",
+        "learning_rate",
+        "num_classes",
+        "batch_size"
     )
     return {
         name: _json_safe(getattr(model, name))
@@ -347,7 +448,11 @@ def _save_run_manifest(
             "max_depth": args.max_depth,
             "min_samples": args.min_samples,
             "bootstrap_samples": args.bootstrap_samples,
-            "requested_synthetic_samples": args.synthetic_samples,
+            "requested_synthetic_samples_rf": args.synthetic_samples_rf,
+            "max_iter": args.max_iter,
+            "learning_rate": args.learning_rate,
+            "batch_size": args.batch_size,
+            "requested_synthetic_samples_olr": args.synthetic_samples_olr,
             "models": args.models,
             "feature_columns": FEATURE_COLUMNS,
         },
