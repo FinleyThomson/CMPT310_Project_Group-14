@@ -114,8 +114,21 @@
       #results{
         height: 4em;
         background-color: white;
+        text-align: center;
       }
-      
+      #power_div{
+        position: absolute;
+        bottom: -15em;
+        left: 47.5%;
+        background-color: white;
+        width: 5%;
+      }
+      #power{
+        background-color: darkred;
+        height: 1.5em; 
+        width: 5em; 
+        font-size: 2em;
+      }
 
     </style>
   </head>
@@ -169,17 +182,24 @@
           
           <div id="pyout" class="center_flex bold">
             <div id="result_presenter">
-                <p>The result is:</p><br>
-                <div id="results">
-                  {% if python_result %}
-                    
-                    {{ python_result }}
+              <p>The result is:</p><br>
+              <div id="results">
+                {% if python_result %}
+                  
+                {{ python_result }}
 
-                  {% endif %}
-                </div>
+                {% endif %}
+              </div>
             </div>
           </div>
         </form>
+        <div id="power_div" class="center_flex">
+          <form action="/shutdown" method="POST">
+            <button type="submit" id="power">
+              Power
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </body>

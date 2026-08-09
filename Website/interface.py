@@ -4,7 +4,7 @@ import pandas as pd
 import googlemaps as gm
 import os
 import sys
-import traceback
+import signal
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0,parent_dir)
@@ -70,6 +70,14 @@ def home():
             return render_template('index.html', community_list = communities, python_result="Error: one or more input(s) are empty!")
         
     return render_template('index.html', community_list = communities, python_result=result)
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    """Shuts down the local Flask server."""
+    print("User shutdown, closing server...")
+    os._exit(0) 
+    
+    return "Shutting down..."
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
