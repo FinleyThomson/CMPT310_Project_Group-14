@@ -1,7 +1,7 @@
 {
-  "created_at_utc": "2026-08-09T23:32:17.600490+00:00",
+  "created_at_utc": "2026-08-10T08:22:57.162467+00:00",
   "command": "'c:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\.venv\\Scripts\\python.exe' -m Model.EvaluateModels --models dummy custom-ensemble",
-  "git_commit": "f8e4c29e85466246e40be1eac8277509a3876f9b",
+  "git_commit": "957cb05c71cc4e1991ece8627f68039eb815f954",
   "git_worktree_dirty": true,
   "runtime": {
     "python": "3.11.9",
@@ -23,20 +23,20 @@
   "configuration": {
     "folds": 5,
     "seed": 310,
-    "trees": 100,
+    "trees": 150,
     "max_depth": 7,
     "min_samples": 5,
-    "bootstrap_samples": 1500,
+    "bootstrap_samples": 120,
     "requested_synthetic_samples_rf": [
       0,
-      900
+      1200
     ],
     "max_iter": 5000,
-    "learning_rate": 0.001,
-    "batch_size": 72,
+    "learning_rate": 0.01,
+    "batch_size": 32,
     "requested_synthetic_samples_olr": [
       0,
-      900
+      1200
     ],
     "models": [
       "dummy",
@@ -68,18 +68,18 @@
       "model_parameters": {}
     },
     {
-      "model": "Ensemble (+900 synthetic rf, olr real only)",
+      "model": "Ensemble (+1200 synthetic rf, olr real only)",
       "synthetic_samples_per_fold": 0,
       "model_parameters": {}
     },
     {
-      "model": "Ensemble (+900 synthetic olr, rf real only)",
-      "synthetic_samples_per_fold": 900,
+      "model": "Ensemble (+1200 synthetic olr, rf real only)",
+      "synthetic_samples_per_fold": 1200,
       "model_parameters": {}
     },
     {
-      "model": "Ensemble (+900 synthetic olr, +900 synthetic rf)",
-      "synthetic_samples_per_fold": 900,
+      "model": "Ensemble (+1200 synthetic olr, +1200 synthetic rf)",
+      "synthetic_samples_per_fold": 1200,
       "model_parameters": {}
     }
   ],

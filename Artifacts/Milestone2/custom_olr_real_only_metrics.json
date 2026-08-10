@@ -1,0 +1,38 @@
+{
+  "model": "Custom OLR (real only)",
+  "real_test_samples": 224,
+  "folds": 5,
+  "synthetic_samples_per_fold": 0,
+  "random_state": 310,
+  "feature_columns": [
+    "Initial Assessment",
+    "Income",
+    "Distance To Downtown",
+    "Distance To Nearest Transit Stop",
+    "Cost Per Unit",
+    "Distance to Nearest Park",
+    "Distance to Nearest Public School"
+  ],
+  "model_parameters": {
+    "max_iter": 5000,
+    "learning_rate": 0.01,
+    "num_classes": 3,
+    "batch_size": 32
+  },
+  "test_accuracy": 0.3705357142857143,
+  "fold_test_accuracy_mean": 0.3706060606060606,
+  "fold_test_accuracy_std": 0.06048008793502962,
+  "balanced_accuracy": 0.36978978978978977,
+  "macro_precision": 0.3607352486870559,
+  "macro_recall": 0.36978978978978977,
+  "macro_f1": 0.36044791661542047,
+  "fold_test_macro_f1_mean": 0.3488482094818893,
+  "fold_test_macro_f1_std": 0.061304171831596824,
+  "weighted_f1": 0.36097698997588673,
+  "training_accuracy_mean": 0.41402234636871504,
+  "training_macro_f1_mean": 0.3970007849492579,
+  "accuracy_generalization_gap": 0.04341628576265444,
+  "ordinal_mean_absolute_error": 0.8392857142857143,
+  "severe_low_high_errors": 47,
+  "severe_low_high_error_rate": 0.20982142857142858
+}

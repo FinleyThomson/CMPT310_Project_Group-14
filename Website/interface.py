@@ -1,10 +1,8 @@
 from flask import Flask, request, render_template
 import numpy as np
 import pandas as pd
-import googlemaps as gm
 import os
 import sys
-import signal
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0,parent_dir)

@@ -47,124 +47,10 @@ class Voter:
 
 
 
-# def main():
 
-#     k_folds = 5
-#     parent_dir = os.path.dirname(os.path.dirname(__file__))
-#     path = os.path.join(
-#         parent_dir,
-#         "Data",
-#         "CSVs",
-#         "Sorted",
-#         "TH_DATA_BY_PROJECT_FINAL.csv",
-#     )
-#     df = pd.read_csv(path)
-    
 
-#     feature_columns_n = [
-#             "Initial Assessment",
-#             "Income",
-#             "Distance To Downtown",
-#             "Distance To Nearest Transit Stop",
-#             "Cost Per Unit",
-#             "Distance to Nearest Park",
-#             "Distance to Nearest Public School",
-#         ]
-
-#     synth_columns_n = [
-#             "EstProjectCost",
-#             "Initial Assessment",
-#             "Final Assessment",
-#             "Income",
-#             "Distance To Downtown",
-#             "Distance To Nearest Transit Stop",
-#             "Cost Per Unit",
-#             "Distance to Nearest Park",
-#             "Distance to Nearest Public School",
-#             "Classification"
-#         ]
-
-#     regressor = ol.Regressor(
-#         max_iter=5000, 
-#         learning_rate=0.001, 
-#         num_classes=3, 
-#         batch_size=72
-#     )
-    
-#     # ol_results = cv.syntheticKFoldCrossValidation(
-#     #     df,
-#     #     feature_columns_n,
-#     #     synth_columns_n,
-#     #     regressor,
-#     #     k_folds,
-#     #     900,
-#     #     random_state=310,
-#     #     preprocess = True
-#     # )
-
-#     forest = rf.RandomForest(
-#         num_trees=60,
-#         num_splitting_features=3,
-#         bootstrap_sample_size=120,
-#         max_depth=10,
-#         min_samples=7,
-#         min_information=0,
-#         num_classifications=3,
-#         with_replacement=True
-#     )
-
-#     # rf_results = cv.syntheticKFoldCrossValidation(
-#     #         df,
-#     #         feature_columns_n,
-#     #         synth_columns_n,
-#     #         forest,
-#     #         k_folds,
-#     #         0,
-#     #         random_state=310,
-#     #         preprocess = True
-#     #     )
-
-#     models = [forest, regressor]
-
-#     voter = Voter(models, 0)
-
-#     voted_results =  cv.syntheticKFoldCrossValidation(
-#             df,
-#             feature_columns_n,
-#             synth_columns_n,
-#             voter,
-#             k_folds,
-#             900,
-#             random_state=310,
-#             preprocess = True,
-#             asymmetric = True
-#         )
-
-#     # print("Custom ordinal regressor")
-#     # print("Confusion matrix (actual rows, predicted columns):")
-#     # print(ol_results[0])
-#     # print("Train accuracy:", ol_results[1])
-#     # print("Train macro-F1:", ol_results[2])
-#     # print("Test accuracy:", ol_results[3])
-#     # print("Test macro-F1:", ol_results[4])
-
-#     # print("Custom random forest")
-#     # print("Confusion matrix (actual rows, predicted columns):")
-#     # print(rf_results[0])
-#     # print("Train accuracy:", rf_results[1])
-#     # print("Train macro-F1:", rf_results[2])
-#     # print("Test accuracy:", rf_results[3])
-#     # print("Test macro-F1:", rf_results[4])
-
-#     print("Voted")
-#     print("Confusion matrix (actual rows, predicted columns):")
-#     print(voted_results[0])
-#     print("Train accuracy:", voted_results[1])
-#     print("Train macro-F1:", voted_results[2])
-#     print("Test accuracy:", voted_results[3])
-#     print("Test macro-F1:", voted_results[4])
-
-def main():
+def HyperParamSearch():
+    """TESTING FOR BEST HYPERPARAMETERS FOR RF AND OLR"""
     k_folds = 5
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     path = os.path.join(
@@ -185,21 +71,22 @@ def main():
         "Distance to Nearest Public School", "Classification"
     ]
 
-    # 1. Updated Grid for Balanced Tertiles
+    
     param_grid = {
-        'rf_trees': [60, 100, 150],          # RFs plateau early on small balanced data
-        'rf_depth': [5, 7, 10],              # Shallower trees prevent overfitting the 180 training points
-        'rf_min_samples': [3, 5, 7],
-        'rf_bootstrap': [120, 150, 180],     
+        'rf_trees': [150],          
+        'rf_depth': [5,7],              
+        'rf_min_samples': [5,7],
+        'rf_bootstrap': [80, 120],     
         
-        'olr_lr': [0.01, 0.005, 0.001],      # Kept standard to avoid exploding gradients
+        'olr_lr': [0.01, 0.005, 0.001],      
         'olr_batch': [32, 64, 72],
+        'olr_max_iter': [3000, 5000, 10000],
         
         'synth_samples': [600, 900, 1200]
     }
 
     num_random_tests = 20
-    best_accuracy = 0  # <--- Changed tracking variable
+    best_accuracy = 0  
     best_params = None
     results_log = []
 
@@ -213,6 +100,7 @@ def main():
             'rf_depth': random.choice(param_grid['rf_depth']),
             'rf_min_samples': random.choice(param_grid['rf_min_samples']),
             'rf_bootstrap': random.choice(param_grid['rf_bootstrap']),
+            'olr_max_iter': random.choice(param_grid['olr_max_iter']),
             'olr_lr': random.choice(param_grid['olr_lr']),
             'olr_batch': random.choice(param_grid['olr_batch']),
             'synth_samples': random.choice(param_grid['synth_samples'])
@@ -220,13 +108,14 @@ def main():
 
         print(f"Iteration {i+1}/{num_random_tests} | Testing configuration:")
         print(f"RF: {p['rf_trees']} trees, Depth {p['rf_depth']}, MinSamp {p['rf_min_samples']}")
-        print(f"OLR: LR {p['olr_lr']}, Batch {p['olr_batch']} | Synth: {p['synth_samples']}")
+        print(f"OLR: Iter {p['olr_max_iter']} LR {p['olr_lr']}, Batch {p['olr_batch']} | Synth: {p['synth_samples']}")
 
         regressor = ol.Regressor(
-            max_iter=5000, 
+            max_iter=p["olr_max_iter"], 
             learning_rate=p['olr_lr'], 
             num_classes=3, 
-            batch_size=p['olr_batch']
+            batch_size=p['olr_batch'],
+            seed = 310
         )
         
         forest = rf.RandomForest(
@@ -237,7 +126,8 @@ def main():
             min_samples=p['rf_min_samples'],
             min_information=0,
             num_classifications=3,
-            with_replacement=True
+            with_replacement=True,
+            random_state = 310
         )
 
         voter = Voter([forest, regressor], 0)
@@ -255,7 +145,7 @@ def main():
                 asymmetric=True
             )
             
-            test_acc = voted_results[3] # Extracting Accuracy
+            test_acc = voted_results[3] 
             test_f1 = voted_results[4]
             
             print(f"Result: Acc = {test_acc:.3f}, F1 = {test_f1:.3f}\n")
@@ -266,7 +156,7 @@ def main():
                 'f1': test_f1
             })
 
-            # 2. Changed condition to save the best configuration based on Accuracy
+            
             if test_acc > best_accuracy:
                 best_accuracy = test_acc
                 best_params = p
@@ -281,6 +171,130 @@ def main():
     print("Best Hyperparameters:")
     for k, v in best_params.items():
         print(f"  {k}: {v}")
+
+def main():
+
+    hyper_search = False
+
+
+    if hyper_search:
+        HyperParamSearch()
+        return
+    else:
+        k_folds = 5
+        parent_dir = os.path.dirname(os.path.dirname(__file__))
+        path = os.path.join(
+            parent_dir,
+            "Data",
+            "CSVs",
+            "Sorted",
+            "TH_DATA_BY_PROJECT_FINAL.csv",
+        )
+        df = pd.read_csv(path)
+        
+
+        feature_columns_n = [
+                "Initial Assessment",
+                "Income",
+                "Distance To Downtown",
+                "Distance To Nearest Transit Stop",
+                "Cost Per Unit",
+                "Distance to Nearest Park",
+                "Distance to Nearest Public School",
+            ]
+
+        synth_columns_n = [
+                "EstProjectCost",
+                "Initial Assessment",
+                "Final Assessment",
+                "Income",
+                "Distance To Downtown",
+                "Distance To Nearest Transit Stop",
+                "Cost Per Unit",
+                "Distance to Nearest Park",
+                "Distance to Nearest Public School",
+                "Classification"
+            ]
+
+        regressor = ol.Regressor(
+            max_iter=5000, 
+            learning_rate=0.01, 
+            num_classes=3, 
+            batch_size=32
+        )
+        
+        # ol_results = cv.syntheticKFoldCrossValidation(
+        #     df,
+        #     feature_columns_n,
+        #     synth_columns_n,
+        #     regressor,
+        #     k_folds,
+        #     900,
+        #     random_state=310,
+        #     preprocess = True
+        # )
+
+        forest = rf.RandomForest(
+            num_trees=150,
+            num_splitting_features=3,
+            bootstrap_sample_size=120,
+            max_depth=7,
+            min_samples=5,
+            min_information=0,
+            num_classifications=3,
+            with_replacement=True
+        )
+
+        # rf_results = cv.syntheticKFoldCrossValidation(
+        #         df,
+        #         feature_columns_n,
+        #         synth_columns_n,
+        #         forest,
+        #         k_folds,
+        #         0,
+        #         random_state=310,
+        #         preprocess = True
+        #     )
+
+        models = [forest, regressor]
+
+        voter = Voter(models, 100)
+
+        voted_results =  cv.syntheticKFoldCrossValidation(
+                df,
+                feature_columns_n,
+                synth_columns_n,
+                voter,
+                k_folds,
+                1200,
+                random_state=310,
+                preprocess = True,
+                asymmetric = True
+            )
+
+        # print("Custom ordinal regressor")
+        # print("Confusion matrix (actual rows, predicted columns):")
+        # print(ol_results[0])
+        # print("Train accuracy:", ol_results[1])
+        # print("Train macro-F1:", ol_results[2])
+        # print("Test accuracy:", ol_results[3])
+        # print("Test macro-F1:", ol_results[4])
+
+        # print("Custom random forest")
+        # print("Confusion matrix (actual rows, predicted columns):")
+        # print(rf_results[0])
+        # print("Train accuracy:", rf_results[1])
+        # print("Train macro-F1:", rf_results[2])
+        # print("Test accuracy:", rf_results[3])
+        # print("Test macro-F1:", rf_results[4])
+
+        print("Voted")
+        print("Confusion matrix (actual rows, predicted columns):")
+        print(voted_results[0])
+        print("Train accuracy:", voted_results[1])
+        print("Train macro-F1:", voted_results[2])
+        print("Test accuracy:", voted_results[3])
+        print("Test macro-F1:", voted_results[4])
 
 if __name__ == "__main__":
     main()

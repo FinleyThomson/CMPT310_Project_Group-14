@@ -90,15 +90,15 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=310)
-    parser.add_argument("--trees", type=int, default=100)
+    parser.add_argument("--trees", type=int, default=150)
     parser.add_argument("--max-depth", type=int, default=7)
     parser.add_argument("--min-samples", type=int, default=5)
-    parser.add_argument("--bootstrap-samples", type=int, default=1500)
+    parser.add_argument("--bootstrap-samples", type=int, default=120)
     parser.add_argument(
             "--synthetic-samples-rf",
             type=int,
             nargs="+",
-            default=[0, 900],
+            default=[0, 1200],
             help=(
                 "Synthetic rows per training fold for the random forest. Defaults to a real-only and a "
                 "900-row augmentation experiment."
@@ -108,15 +108,15 @@ def parse_args() -> argparse.Namespace:
         "--synthetic-samples-olr",
         type=int,
         nargs="+",
-        default=[0, 900],
+        default=[0, 1200],
         help=(
             "Synthetic rows per training fold for ordinial logistic regression. Defaults to a real-only and a "
             "900-row augmentation experiment."
         ),
     )
     parser.add_argument("--max-iter", type=int, default=5000)
-    parser.add_argument("--learning-rate", type=float, default=0.001)
-    parser.add_argument("--batch-size", type=int, default=72)
+    parser.add_argument("--learning-rate", type=float, default=0.01)
+    parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument(
         "--models",
         nargs="+",

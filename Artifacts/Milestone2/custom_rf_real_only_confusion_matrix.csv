@@ -1,4 +1,4 @@
 ,predicted_Low ROI,predicted_Medium ROI,predicted_High ROI
 actual_Low ROI,38,18,19
-actual_Medium ROI,18,33,23
-actual_High ROI,26,25,24
+actual_Medium ROI,19,34,21
+actual_High ROI,25,23,27
