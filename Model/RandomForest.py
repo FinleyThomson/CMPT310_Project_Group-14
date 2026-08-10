@@ -14,6 +14,8 @@ except ImportError:
     import CrossValidation as cv
     import DecisionTree as dt
 
+from concurrent.futures import ProcessPoolExecutor
+
 
 # ------------
 # Constants
@@ -38,6 +40,16 @@ RANDOM_STATE = 310
 # ----------------------
 # Random Forest Class
 # ----------------------
+
+def _train_single_tree(task_bundle):
+    """
+    Standalone helper function for parallel processing.
+    Unpacks the un-trained tree and its bootstrapped data, 
+    trains it, and returns the finished tree.
+    """
+    tree, X_boot, Y_boot = task_bundle
+    tree.train(X_boot, Y_boot)
+    return tree
 
 class RandomForest():
 
@@ -81,7 +93,7 @@ class RandomForest():
     def createForest(self, X_values, y_values):
         """Creates the forest"""
 
-        forest = []
+        tasks = []
 
         for i in range(self.num_trees):
             bootstrap_indices = self.bootstrappingSample(y_values)
@@ -97,9 +109,12 @@ class RandomForest():
                 num_splitting_features=self.num_splitting_features,
                 random_state=tree_seed,
             )
-            tree.train(bootstrap_X, bootstrap_Y)
 
-            forest.append(tree)
+            tasks.append((tree, bootstrap_X, bootstrap_Y))
+
+        with ProcessPoolExecutor(max_workers=None) as executor:
+
+            forest = list(executor.map(_train_single_tree, tasks))
 
         return np.array(forest, dtype=object)
 
@@ -212,33 +227,33 @@ def main():
     print("Test accuracy:", custom_results[3])
     print("Test macro-F1:", custom_results[4])
 
-    sk_forest = RandomForestClassifier(
-        n_estimators=NUM_TREES,
-        max_depth=MAX_DEPTH,
-        min_samples_leaf=MIN_SAMPLES,
-        max_features=NUM_SPLITTING_FEATURES,
-        bootstrap=True,
-        max_samples=BOOTSTRAP_SAMPLE_SIZE,
-        random_state=RANDOM_STATE,
-        n_jobs=-1,
-    )
-    sklearn_results = cv.syntheticKFoldCrossValidation(
-        df,
-        feature_columns,
-        synth_columns,
-        sk_forest,
-        k_folds,
-        3000,
-        random_state=RANDOM_STATE,
-    )
+    # sk_forest = RandomForestClassifier(
+    #     n_estimators=NUM_TREES,
+    #     max_depth=MAX_DEPTH,
+    #     min_samples_leaf=MIN_SAMPLES,
+    #     max_features=NUM_SPLITTING_FEATURES,
+    #     bootstrap=True,
+    #     max_samples=BOOTSTRAP_SAMPLE_SIZE,
+    #     random_state=RANDOM_STATE,
+    #     n_jobs=-1,
+    # )
+    # sklearn_results = cv.syntheticKFoldCrossValidation(
+    #     df,
+    #     feature_columns,
+    #     synth_columns,
+    #     sk_forest,
+    #     k_folds,
+    #     3000,
+    #     random_state=RANDOM_STATE,
+    # )
 
-    print("\nscikit-learn random forest")
-    print("Confusion matrix (actual rows, predicted columns):")
-    print(sklearn_results[0])
-    print("Train accuracy:", sklearn_results[1])
-    print("Train macro-F1:", sklearn_results[2])
-    print("Test accuracy:", sklearn_results[3])
-    print("Test macro-F1:", sklearn_results[4])
+    # print("\nscikit-learn random forest")
+    # print("Confusion matrix (actual rows, predicted columns):")
+    # print(sklearn_results[0])
+    # print("Train accuracy:", sklearn_results[1])
+    # print("Train macro-F1:", sklearn_results[2])
+    # print("Test accuracy:", sklearn_results[3])
+    # print("Test macro-F1:", sklearn_results[4])
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ import os
 
 class Regressor:
 
-    def __init__(self, max_iter, learning_rate, num_classes, batch_size, seed):
+    def __init__(self, max_iter = 5000, learning_rate=0.001, num_classes=3, batch_size=72, seed = None):
         self.max_iter = max_iter
         self.learning_rate = learning_rate
         self.num_classes = num_classes
@@ -71,8 +71,22 @@ class Regressor:
 
         num_batches = len(y_batches)
         
+        eps_check = 0
+
+        grad_b = np.ones(len(y_batches))
+        grad_t = np.ones(self.num_classes - 1)
 
         for i in range(self.max_iter):
+            eps = 1e-5
+            if np.max(np.abs(grad_b)) < eps and np.max(np.abs(grad_t)) <eps:
+                eps_check+=1
+            else:
+                eps_check = 0
+
+            if eps_check > 10:
+                print(f"Early stopping triggered at epoch {i}")
+                break
+
             for batch in range(num_batches):
                 logits = self.getAllLogits(x_batches[batch])
                 probs = self.sigmoid(logits)
@@ -80,9 +94,11 @@ class Regressor:
                 grad_b = np.zeros(self.b.shape)
                 grad_t = np.zeros(self.t.shape)
                 
-                for j in range(self.batch_size):
-                    grad_b += self.bDerivative(x_batches[batch], y_batches[batch], probs, j)
-                grad_b = grad_b * (1/self.batch_size)
+                # for j in range(self.batch_size):
+                #     grad_b += self.bDerivative(x_batches[batch], y_batches[batch], probs, j)
+                # grad_b = grad_b * (1/self.batch_size)
+
+                grad_b = self.bDerivative(x_batches[batch], y_batches[batch], probs)* (1/self.batch_size)
                 self.b = self.b - self.learning_rate * grad_b
 
                 # A = np.zeros(T.size)
@@ -91,62 +107,100 @@ class Regressor:
                 # A[1:] = np.log(t[1:] - t[:-1])
                 # B = np.zeros(X[0].size)
                 
-                for j in range(self.batch_size):
-                    for k in range(self.num_classes - 1):
-                        grad_t[k] += self.tDerivative(y_batches[batch], probs, j, k)
-                grad_t = grad_t * 1/self.batch_size
+                # for j in range(self.batch_size):
+                #     for k in range(self.num_classes - 1):
+                grad_t = self.tDerivative(y_batches[batch], probs) * 1/self.batch_size
+                # grad_t = grad_t * 1/self.batch_size
                 self.t = self.t - self.learning_rate * grad_t
 
 
 
-    def bDerivative(self, x_values, y_values, probs, i):
+    def bDerivative(self, x_values, y_values, probs):
 
-        if y_values[i] == 0:
-            lower = 0
-            upper = probs[i,y_values[i]]
-        elif y_values[i] == self.num_classes - 1:
-            upper = 1   
-            lower = probs[i,y_values[i] - 1] 
-        else:
-            lower = probs[i,y_values[i] - 1] 
-            upper = probs[i,y_values[i]] 
+        # if y_values[i] == 0:
+        #     lower = 0
+        #     upper = probs[i,y_values[i]]
+        # elif y_values[i] == self.num_classes - 1:
+        #     upper = 1   
+        #     lower = probs[i,y_values[i] - 1] 
+        # else:
+        #     lower = probs[i,y_values[i] - 1] 
+        #     upper = probs[i,y_values[i]] 
+
+        batch_size = len(y_values)
+        lower = np.zeros(batch_size)
+        upper = np.ones(batch_size)
+
+        mask_not_zero = (y_values > 0)
+        mask_not_last = (y_values < self.num_classes - 1)
+
+        lower[mask_not_zero] = probs[mask_not_zero, y_values[mask_not_zero] - 1]
+        upper[mask_not_last] = probs[mask_not_last, y_values[mask_not_last]]
 
         denom = upper-lower
+        denom[denom == 0] = 1e-15
 
-        if denom == 0:
-            denom = 1e-15
+        # if denom == 0:
+        #     denom = 1e-15
 
         sig_lower_prime = lower*(1-lower)
         sig_upper_prime = upper*(1-upper)
 
-        grad_b = x_values[i] * 1/denom * (sig_upper_prime - sig_lower_prime)
+        multiplier = (sig_upper_prime - sig_lower_prime)/denom
+
+        grad_b = np.dot(multiplier, x_values)
 
         return grad_b
 
 
-    def tDerivative(self, y_values, probs, i, k):
+    def tDerivative(self, y_values, probs):
 
-        if y_values[i] != k and y_values[i] != k+1:
-            return 0
+        # if y_values[i] != k and y_values[i] != k+1:
+        #     return 0
 
-        if y_values[i] == 0:
-            lower = 0
-            upper = probs[i,y_values[i]]
-        elif y_values[i] == self.num_classes - 1:
-            upper = 1
-            lower = probs[i,y_values[i]-1]
-        else:
-            lower = probs[i,y_values[i]-1]
-            upper = probs[i,y_values[i]]
+        # if y_values[i] == 0:
+        #     lower = 0
+        #     upper = probs[i,y_values[i]]
+        # elif y_values[i] == self.num_classes - 1:
+        #     upper = 1
+        #     lower = probs[i,y_values[i]-1]
+        # else:
+        #     lower = probs[i,y_values[i]-1]
+        #     upper = probs[i,y_values[i]]
+
+        batch_size = len(y_values)
+        lower = np.zeros(batch_size)
+        upper = np.ones(batch_size)
+
+        mask_not_zero = (y_values > 0)
+        mask_not_last = (y_values < self.num_classes - 1)
+
+        lower[mask_not_zero] = probs[mask_not_zero,y_values[mask_not_zero] - 1]
+        upper[mask_not_last] = probs[mask_not_last,y_values[mask_not_last]]
 
         denom = upper - lower
-        if denom == 0:
-            denom = 1e-15
+        denom[denom == 0] = 1e-15
+        # if denom == 0:
+        #     denom = 1e-15
 
-        if y_values[i] == k:
-            return -(upper*(1-upper))/denom
-        elif y_values[i] == k+1:
-            return (lower*(1-lower))/denom
+        sig_lower_prime = lower * (1 - lower)
+        sig_upper_prime = upper * (1 - upper)
+
+        grad_t = np.zeros(self.num_classes - 1)
+
+        # if y_values[i] == k:
+        #     return -(upper*(1-upper))/denom
+        # elif y_values[i] == k+1:
+        #     return (lower*(1-lower))/denom
+
+        for k in range(self.num_classes-1):
+            mask_k = (y_values == k)
+            mask_k1 = (y_values == k + 1)
+            
+            grad_t[k] += np.sum(-sig_upper_prime[mask_k] / denom[mask_k])
+            grad_t[k] += np.sum(sig_lower_prime[mask_k1] / denom[mask_k1])
+            
+        return grad_t
 
     def fit(self, x_values, y_values):
 
@@ -217,7 +271,7 @@ def main():
             "Classification"
         ]
 
-    regressor = Regressor(100, 0.01, 3, 32)
+    regressor = Regressor(5000, 0.001, 3, 32)
     
     custom_results = cv.syntheticKFoldCrossValidation(
         df,
