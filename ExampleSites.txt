@@ -1,0 +1,9 @@
+From the real dataset, we have picked out randomly two data points from each category that you can use to test the interface.
+
+    Addresses                 Units     Community       Price       ROI
+1)	3814 202 AV SE	            4	    SETON	        532000	    Low
+2)	1640 40 ST SW	            6	    ROSSCARROCK	    627000	    Low
+3)	1 1722 32 ST SW	            8	    SHAGANAPPI	    1203000	    Medium
+4)	3311 33 ST SW	            4	    KILLARNEY	    698000	    Medium
+5)	6B 2015 22 ST SW	        9	    RICHMOND	    1367000	    High
+6)	1367 CORNERSTONE BV NE	    21	    CORNERSTONE	    1429500	    High
