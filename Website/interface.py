@@ -77,6 +77,9 @@ def shutdown():
     
     return "Shutting down..."
 
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+def start_website():
+    app.run(port=8000, debug=False)
+
+if __name__ == "__main__":
+    start_website()
 
