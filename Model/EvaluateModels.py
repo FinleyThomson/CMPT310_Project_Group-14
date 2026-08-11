@@ -43,7 +43,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_PATH = (
     REPOSITORY_ROOT / "Data" / "CSVs" / "Sorted" / "TH_DATA_BY_PROJECT_FINAL.csv"
 )
-DEFAULT_OUTPUT_DIR = REPOSITORY_ROOT / "Artifacts" / "Milestone2"
+DEFAULT_OUTPUT_DIR = REPOSITORY_ROOT / "Presentation Artifacts" 
 
 FEATURE_COLUMNS = [
     "Initial Assessment",

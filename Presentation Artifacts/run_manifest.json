@@ -1,7 +1,7 @@
 {
-  "created_at_utc": "2026-08-11T05:18:52.366753+00:00",
-  "command": "'c:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\.venv\\Scripts\\python.exe' -m Model.EvaluateModels --models custom-rf",
-  "git_commit": "7d45bec068a6256a4969e7a5dc5bee5b47635d09",
+  "created_at_utc": "2026-08-11T05:48:09.375305+00:00",
+  "command": "'c:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\.venv\\Scripts\\python.exe' -m Model.EvaluateModels --models dummy custom-ensemble",
+  "git_commit": "b1bc8d741ac3eb26b4f255dbaaa0168338188d95",
   "git_worktree_dirty": true,
   "runtime": {
     "python": "3.11.9",
@@ -39,7 +39,8 @@
       1200
     ],
     "models": [
-      "custom-rf"
+      "dummy",
+      "custom-ensemble"
     ],
     "feature_columns": [
       "Initial Assessment",
@@ -53,34 +54,35 @@
   },
   "experiments": [
     {
-      "model": "Custom RF (real only)",
+      "model": "Majority baseline (real only)",
       "synthetic_samples_per_fold": 0,
       "model_parameters": {
-        "num_trees": 150,
-        "num_splitting_features": 3,
-        "bootstrapping_sample_size": 120,
-        "max_depth": 7,
-        "min_samples": 5,
-        "min_information": 0,
-        "num_classifications": 3,
-        "with_replacement": true
+        "constant": null,
+        "random_state": null,
+        "strategy": "most_frequent"
       }
     },
     {
-      "model": "Custom RF (+1200 synthetic)",
+      "model": "Ensemble (real only)",
+      "synthetic_samples_per_fold": 0,
+      "model_parameters": {}
+    },
+    {
+      "model": "Ensemble (+1200 synthetic rf, olr real only)",
       "synthetic_samples_per_fold": 1200,
-      "model_parameters": {
-        "num_trees": 150,
-        "num_splitting_features": 3,
-        "bootstrapping_sample_size": 120,
-        "max_depth": 7,
-        "min_samples": 5,
-        "min_information": 0,
-        "num_classifications": 3,
-        "with_replacement": true
-      }
+      "model_parameters": {}
+    },
+    {
+      "model": "Ensemble (+1200 synthetic olr, rf real only)",
+      "synthetic_samples_per_fold": 1200,
+      "model_parameters": {}
+    },
+    {
+      "model": "Ensemble (+1200 synthetic olr, +1200 synthetic rf)",
+      "synthetic_samples_per_fold": 1200,
+      "model_parameters": {}
     }
   ],
-  "comparison_table": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Artifacts\\Milestone2\\model_comparison.csv",
-  "comparison_plot": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Artifacts\\Milestone2\\model_comparison.png"
+  "comparison_table": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Presentation Artifacts\\model_comparison.csv",
+  "comparison_plot": "C:\\Users\\finle\\Documents\\CMPT310_Project_Group-14\\Presentation Artifacts\\model_comparison.png"
 }
