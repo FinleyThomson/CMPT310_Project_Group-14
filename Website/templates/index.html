@@ -118,9 +118,8 @@
       }
       #power_div{
         position: absolute;
-        bottom: -15em;
+        padding-top: 12em;
         left: 47.5%;
-        background-color: white;
         width: 5%;
       }
       #power{
@@ -169,9 +168,11 @@
 
               <label for="model">Choose a Model:</label>
               <select name="model" id="choices" class="input_box">
-                <option value="rf">Random Forest</option>
-                <option value="olr">Ordinal Logistic Regression</option>
-                <option value="ensemble" selected>Ensemble (default)</option>
+                <option value="rf">Random Forest (trained on real data only)</option>
+                <option value="olr_real">Ordinal Logistic Regression (trained on real data only)</option>
+                <option value="ensemble_real" selected>Ensemble (default) (trained on real data only)</option>
+                <option value="olr_1200">Ordinal Logistic Regression (trained on real data + synthetic data points)</option>
+                <option value="ensemble_1200_olr_real_rf" selected>Ensemble (default) (RF trained on real data only, OLR trained on real + synthetic data points)</option>
               </select><br><br>
             </div>    
           </div>

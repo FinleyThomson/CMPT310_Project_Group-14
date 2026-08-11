@@ -155,7 +155,7 @@ def syntheticKFoldCrossValidation(
         if not asymmetric:
             model.fit(X_train, y_train)
         else:
-            leny = len(y_train)
+            leny = len(train_real)
             model.fit(X_train[0:leny],y_train[0:leny],X_train[leny:],y_train[leny:])
         training_predictions = np.asarray(model.predict(X_train))
         test_predictions = np.asarray(model.predict(X_test))

@@ -15,10 +15,15 @@ model_folder_path = parent_dir + '\\Model'
 if model_folder_path not in sys.path:
     sys.path.append(model_folder_path)
 
-ensemble = joblib.load(parent_dir+'\\Model\\ensemble.pkl')
-forest = joblib.load(parent_dir+'\\Model\\random_forest.pkl')
-regressor = joblib.load(parent_dir+'\\Model\\ordinal_logistic.pkl')
-scaler = joblib.load(parent_dir+'\\Model\\scaler.pkl')
+ensemble_1200_olr_real_rf = joblib.load(parent_dir+'\\Model\\TrainedModels\\ensemble_real_rf_1200_synth_olr.pkl')
+ensemble_real_only = joblib.load(parent_dir+'\\Model\\TrainedModels\\ensemble_real_only.pkl')
+forest = joblib.load(parent_dir+'\\Model\\TrainedModels\\random_forest_real_only.pkl')
+regressor_1200 = joblib.load(parent_dir+'\\Model\\TrainedModels\\ordinal_logistic_regressor_1200_synth.pkl')
+regressor_real = joblib.load(parent_dir+'\\Model\\TrainedModels\\ordinal_logistic_regressor_real.pkl')
+scaler_1200 = joblib.load(parent_dir+'\\Model\\TrainedModels\\scaler_1200.pkl')
+scaler_real = joblib.load(parent_dir+'\\Model\\TrainedModels\\scaler_real.pkl')
+
+
 
 def runModel(model, X):
     """
@@ -31,19 +36,26 @@ def runModel(model, X):
     --------
     classification: (string) the classification of the point
     """
-
-    X_scaled = scaler.transform([X])
+    if model == "olr_1200" or model == "ensemble_1200_olr_real_rf":
+        X_scaled = scaler_1200.transform([X])
+    else:
+        X_scaled = scaler_real.transform([X])
 
     if model == "rf":
         cls = forest.predict(X_scaled)
         return classes(cls)
-    elif model == "olr":
-        cls = regressor.predict(X_scaled)
+    elif model == "olr_1200":
+        cls = regressor_1200.predict(X_scaled)
         return classes(cls)
-    elif model == "ensemble":
-        cls = ensemble.predict(X_scaled)
+    elif model == "ensemble_1200_olr_real_rf":
+        cls = ensemble_1200_olr_real_rf.predict(X_scaled)
         return classes(cls)
-
+    elif model == "olr_real":
+        cls = regressor_real.predict(X_scaled)
+        return classes(cls)
+    elif model == "ensemble_real":
+        cls = ensemble_real_only.predict(X_scaled)
+        return classes(cls)
 
 def classes(cls):
     if cls == 0:

@@ -283,7 +283,8 @@ def main() -> None:
                     )
                     ensemble = Voter(
                         models = [custom_forest, custom_regressor],
-                        num_tree_synth = synthetic_samples_rf
+                        num_tree_synth = synthetic_samples_rf,
+                        num_olr_synth = synthetic_samples_olr
                     )
                     evaluations.append(
                         _run_experiment(
@@ -291,7 +292,7 @@ def main() -> None:
                             ensemble,
                             data,
                             args,
-                            synthetic_samples_olr,
+                            max(synthetic_samples_olr, synthetic_samples_rf),
                             asymmetric = True
                         )
                     )

@@ -1,7 +1,7 @@
 import joblib
-import RandomForest as rf
-import OrdinalLogisticRegression as ol
-import Voter as vo
+from Model import RandomForest as rf
+from Model import OrdinalLogisticRegression as ol
+from Model import Voter as vo
 import os
 import sys
 import pandas as pd
@@ -44,10 +44,10 @@ def main():
                 "Classification"
             ]
 
-    forest = rf.RandomForest(num_trees=60,num_splitting_features=3,bootstrap_sample_size=120,max_depth=10,min_samples=7,min_information=0,num_calssifications=3,with_replacement=True)
-    regressor = ol.Regressor(max_iter=5000, learning_rate=0.001, num_classes=3, batch_size=72)
+    forest = rf.RandomForest(num_trees=150,num_splitting_features=3,bootstrap_sample_size=120,max_depth=7,min_samples=5,min_information=0,num_classifications=3,with_replacement=True,random_state=310)
+    regressor = ol.Regressor(max_iter=5000, learning_rate=0.01, num_classes=3, batch_size=32, seed=310)
     training_set_real = data[synth_columns]
-    training_set_synth = sd.multivariateLognormalDistributionGeneration(data, synth_columns,900,310)
+    training_set_synth = sd.multivariateLognormalDistributionGeneration(data, synth_columns,1200,310)
 
     scaler = StandardScaler()
 
@@ -64,15 +64,15 @@ def main():
 
     ensemble = vo.Voter(models=[forest, regressor], num_tree_synth=0)
     ensemble.fit(X_real, y_real, X_synth, y_synth)
-    joblib.dump(ensemble, 'ensemble.pkl')
+    joblib.dump(ensemble, 'ensemble_real_only.pkl')
 
     forest.fit(X_real, y_real)
-    joblib.dump(forest, 'random_forest.pkl')
+    joblib.dump(forest, 'random_forest_real_only.pkl')
 
     regressor.fit(X_mixed, y_mixed)
-    joblib.dump(regressor, 'ordinal_logistic.pkl')
+    joblib.dump(regressor, 'ordinal_logistic_regressor_real.pkl')
 
-    joblib.dump(scaler, 'scaler.pkl')
+    joblib.dump(scaler, 'scaler_real.pkl')
 
     print("Models saved successfully!")
 

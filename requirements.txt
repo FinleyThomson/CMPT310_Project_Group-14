@@ -5,4 +5,4 @@ matplotlib>=3.7,<4
 Flask
 haversine
 joblib
-request
+requests

@@ -19,7 +19,7 @@ def home():
     result = None
 
     incomes = pd.read_csv("..\\Data\\CSVs\\Sorted\\incomes.csv")
-    community = incomes['Community Name'].str.capitalize()
+    community = incomes['Community Name'].str.title()
     communities = community.tolist()  #add all the communities from the incomes
     
     if request.method == 'POST':
