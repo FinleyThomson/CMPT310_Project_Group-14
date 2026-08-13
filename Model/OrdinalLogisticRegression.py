@@ -93,39 +93,16 @@ class Regressor:
 
                 grad_b = np.zeros(self.b.shape)
                 grad_t = np.zeros(self.t.shape)
-                
-                # for j in range(self.batch_size):
-                #     grad_b += self.bDerivative(x_batches[batch], y_batches[batch], probs, j)
-                # grad_b = grad_b * (1/self.batch_size)
 
                 grad_b = self.bDerivative(x_batches[batch], y_batches[batch], probs)* (1/self.batch_size)
                 self.b = self.b - self.learning_rate * grad_b
 
-                # A = np.zeros(T.size)
-
-                # A[0] = T[0]
-                # A[1:] = np.log(t[1:] - t[:-1])
-                # B = np.zeros(X[0].size)
-                
-                # for j in range(self.batch_size):
-                #     for k in range(self.num_classes - 1):
                 grad_t = self.tDerivative(y_batches[batch], probs) * 1/self.batch_size
-                # grad_t = grad_t * 1/self.batch_size
                 self.t = self.t - self.learning_rate * grad_t
 
 
 
     def bDerivative(self, x_values, y_values, probs):
-
-        # if y_values[i] == 0:
-        #     lower = 0
-        #     upper = probs[i,y_values[i]]
-        # elif y_values[i] == self.num_classes - 1:
-        #     upper = 1   
-        #     lower = probs[i,y_values[i] - 1] 
-        # else:
-        #     lower = probs[i,y_values[i] - 1] 
-        #     upper = probs[i,y_values[i]] 
 
         batch_size = len(y_values)
         lower = np.zeros(batch_size)
@@ -140,9 +117,6 @@ class Regressor:
         denom = upper-lower
         denom[denom == 0] = 1e-15
 
-        # if denom == 0:
-        #     denom = 1e-15
-
         sig_lower_prime = lower*(1-lower)
         sig_upper_prime = upper*(1-upper)
 
@@ -154,19 +128,6 @@ class Regressor:
 
 
     def tDerivative(self, y_values, probs):
-
-        # if y_values[i] != k and y_values[i] != k+1:
-        #     return 0
-
-        # if y_values[i] == 0:
-        #     lower = 0
-        #     upper = probs[i,y_values[i]]
-        # elif y_values[i] == self.num_classes - 1:
-        #     upper = 1
-        #     lower = probs[i,y_values[i]-1]
-        # else:
-        #     lower = probs[i,y_values[i]-1]
-        #     upper = probs[i,y_values[i]]
 
         batch_size = len(y_values)
         lower = np.zeros(batch_size)
@@ -180,18 +141,12 @@ class Regressor:
 
         denom = upper - lower
         denom[denom == 0] = 1e-15
-        # if denom == 0:
-        #     denom = 1e-15
 
         sig_lower_prime = lower * (1 - lower)
         sig_upper_prime = upper * (1 - upper)
 
         grad_t = np.zeros(self.num_classes - 1)
 
-        # if y_values[i] == k:
-        #     return -(upper*(1-upper))/denom
-        # elif y_values[i] == k+1:
-        #     return (lower*(1-lower))/denom
 
         for k in range(self.num_classes-1):
             mask_k = (y_values == k)
